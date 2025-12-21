@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMS Giriş Doğrulama</title>
+    <title>Giriş Yap</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -29,7 +29,6 @@
             border-top: 3px solid #3498db;
             width: 20px;
             height: 20px;
-            -webkit-animation: spin 1s linear infinite; /* Safari */
             animation: spin 1s linear infinite;
             display: inline-block;
             vertical-align: middle;
@@ -43,7 +42,7 @@
 <body class="flex flex-col items-center justify-center p-4">
 
     <!-- Ana Kart -->
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative mb-6">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative">
         
         <!-- Üst Başlık Kısmı -->
         <div class="bg-blue-600 p-6 text-center text-white">
@@ -120,54 +119,13 @@
         </div>
     </div>
 
-    <!-- HATA AYIKLAMA KUTUSU: Domain Bilgisi -->
-    <div id="domain-info-box" class="w-full max-w-md bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-xs text-yellow-800 shadow-sm transition-opacity duration-500">
-        <p class="font-bold mb-1"><i class="fas fa-info-circle mr-1"></i> Geliştirici Notu:</p>
-        <p class="mb-2">Gerçek SMS gönderimi için şu anki "blob" adresinin Firebase Console'da yetkili olması gerekir. Önizleme adresi sürekli değiştiği için bu hata almanız normaldir.</p>
-        <div class="flex items-center gap-2 bg-white border border-yellow-300 p-2 rounded">
-            <code id="current-domain" class="flex-1 font-mono text-gray-700 overflow-hidden text-ellipsis"></code>
-            <button onclick="copyDomain()" class="text-blue-600 hover:text-blue-800 font-bold px-2">Kopyala</button>
-        </div>
-    </div>
-
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <script>
-        // DOMAIN GÖSTERME (Hata Ayıklama İçin)
-        const hostname = window.location.hostname;
-        document.getElementById('current-domain').innerText = hostname;
-
-        function copyDomain() {
-            const textArea = document.createElement("textarea");
-            textArea.value = hostname;
-            
-            textArea.style.position = "fixed";
-            textArea.style.left = "-9999px";
-            textArea.style.top = "0";
-            document.body.appendChild(textArea);
-            
-            textArea.focus();
-            textArea.select();
-            
-            try {
-                const successful = document.execCommand('copy');
-                if(successful) {
-                     alert("Domain kopyalandı! Firebase Console'a eklemeyi unutmayın.");
-                } else {
-                     prompt("Domain:", hostname);
-                }
-            } catch (err) {
-                console.error('Kopyalama hatası:', err);
-                prompt("Domain:", hostname);
-            }
-            
-            document.body.removeChild(textArea);
-        }
-
         // ==========================================
-        // AYARLAR
+        // GÜNCEL CONFIG
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyDWhGyTxXYHS77mG0C1HwVImOOZBmHWKeI",
@@ -178,12 +136,8 @@
             appId: "1:394188723036:web:b4708c8c688aa347c1e799"
         };
 
-        // Başlangıçta gerçek modda başlatmayı dene, ama hata olursa kullanıcıya seçenek sun
-        let isSimulationMode = false; 
-
-        // ==========================================
-        // UYGULAMA MANTIĞI
-        // ==========================================
+        // Hata durumunda kurtarıcı mod
+        let isSimulationMode = false;
 
         let confirmationResult = null;
         let app, auth;
@@ -192,45 +146,42 @@
         try {
             app = firebase.initializeApp(firebaseConfig);
             auth = firebase.auth();
-            auth.languageCode = 'tr';
-            setupRecaptcha(); // Sayfa yüklenirken hazırla
+            auth.languageCode = 'tr'; 
         } catch (e) {
             console.error("Firebase init error:", e);
-            showNotification("Firebase başlatılamadı.", "error");
         }
 
+        // Recaptcha Hazırlığı
         function setupRecaptcha() {
-            // Eğer simülasyon modundaysak recaptcha'ya gerek yok
-            if (isSimulationMode) return;
+            if (isSimulationMode) return; 
 
             if (!window.recaptchaVerifier) {
                 try {
                     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
                         'size': 'invisible',
-                        'callback': (response) => {
-                            console.log("Recaptcha doğrulandı");
-                        },
+                        'callback': (response) => { console.log("Recaptcha verified"); },
                         'expired-callback': () => {
-                            console.log("Recaptcha süresi doldu");
+                             showNotification("Doğrulama zaman aşımı.", "error");
                         }
                     });
                     window.recaptchaVerifier.render();
                 } catch(e) {
-                    console.error("Recaptcha setup error:", e);
+                    console.error("Recaptcha error:", e);
                 }
             }
         }
 
+        window.onload = setupRecaptcha;
+
         function switchToSimulation() {
             isSimulationMode = true;
-            document.getElementById('domain-info-box').style.display = 'none';
-            showNotification("Simülasyon moduna geçildi. Artık test edebilirsiniz.", "success");
-            // Recaptcha containerı temizle
-            document.getElementById('recaptcha-container').innerHTML = '';
-            // Otomatik olarak tekrar gönder
+            document.getElementById('recaptcha-container').innerHTML = ''; // Temizle
+            showNotification("Simülasyon Modu Aktif: Kod 123456", "success");
+            // Otomatik yeniden dene
             setTimeout(sendOTP, 1000);
         }
 
+        // SMS Gönder
         function sendOTP() {
             const phoneNumber = document.getElementById('phone').value;
             const btn = document.getElementById('btn-send');
@@ -242,7 +193,7 @@
 
             setLoading(btn, true, "Kod Gönderiliyor...");
 
-            // SİMÜLASYON MODU
+            // === SİMÜLASYON MODU ===
             if (isSimulationMode) {
                 setTimeout(() => {
                     setLoading(btn, false, "Doğrulama Kodu Gönder");
@@ -253,11 +204,8 @@
                 return;
             }
 
-            // GERÇEK MOD
-            if (!window.recaptchaVerifier) {
-                setupRecaptcha();
-            }
-
+            // === GERÇEK MOD ===
+            if (!window.recaptchaVerifier) setupRecaptcha();
             const appVerifier = window.recaptchaVerifier;
 
             auth.signInWithPhoneNumber(phoneNumber, appVerifier)
@@ -269,42 +217,43 @@
                     document.getElementById('display-phone').innerText = phoneNumber;
                 }).catch((error) => {
                     setLoading(btn, false, "Doğrulama Kodu Gönder");
-                    console.error("SMS Error:", error);
+                    console.error("SMS Hatası:", error);
                     
-                    let msg = "Bir hata oluştu: " + error.message;
-                    
-                    // ÖZEL HATA YÖNETİMİ: Domain veya Yetki Hatası
-                    if(error.code === 'auth/internal-error' || error.code === 'auth/network-request-failed') {
+                    // --- HATA YÖNETİMİ ---
+                    if (error.code === 'auth/billing-not-enabled') {
                         showErrorWithAction(
-                            "Domain yetki hatası (Firebase güvenlik engeli).",
-                            "Önizleme ortamında domain sürekli değiştiği için bu normaldir. Test için simülasyon moduna geçin.",
-                            "Simülasyon Moduna Geç",
+                            "Paket Henüz Aktif Değil",
+                            "Google ödemenizi işliyor olabilir. Genellikle 5-10 dakika sürer. Beklerken Simülasyon modunda deneyebilirsiniz.",
+                            "Simülasyon ile Devam Et",
                             switchToSimulation
                         );
-                        return; // Standart bildirimi gösterme
+                        return;
                     } 
-                    else if(error.code === 'auth/invalid-phone-number') {
-                        msg = "Geçersiz telefon numarası formatı.";
-                    } else if(error.code === 'auth/too-many-requests') {
-                        msg = "Çok fazla deneme yapıldı. Lütfen biraz bekleyin.";
+                    else if (error.code === 'auth/internal-error') {
+                        showErrorWithAction(
+                            "Domain Hatası",
+                            "Sitenizin adresi değiştiği için Firebase engelledi. Test moduna geçebilirsiniz.",
+                            "Simülasyon ile Devam Et",
+                            switchToSimulation
+                        );
+                        return;
                     }
-                    
-                    showNotification(msg, "error");
-                    
-                    // Recaptcha resetlemeyi dene
+                    else if(error.code === 'auth/invalid-phone-number') {
+                        showNotification("Telefon numarası formatı geçersiz.", "error");
+                    } else if(error.code === 'auth/too-many-requests') {
+                        showNotification("Çok fazla deneme yaptınız.", "error");
+                    } else {
+                        showNotification("Hata: " + error.message, "error");
+                    }
+
+                    // Recaptcha reset
                     if(window.recaptchaVerifier) {
-                        try {
-                            window.recaptchaVerifier.render().then(function(widgetId) {
-                                grecaptcha.reset(widgetId);
-                            });
-                        } catch(e) { 
-                             window.recaptchaVerifier.clear();
-                             window.recaptchaVerifier = null;
-                        }
+                        try { window.recaptchaVerifier.clear(); window.recaptchaVerifier = null; } catch(e){}
                     }
                 });
         }
 
+        // Kodu Doğrula
         function verifyOTP() {
             const code = document.getElementById('otp-code').value;
             const btn = document.getElementById('btn-verify');
@@ -316,42 +265,40 @@
 
             setLoading(btn, true, "Doğrulanıyor...");
 
-            // Simülasyon Doğrulaması
+            // Simülasyon Kontrolü
             if (isSimulationMode) {
                  setTimeout(() => {
                     setLoading(btn, false, "Doğrula ve Giriş Yap");
                     if (code === "123456") {
                         goToStep('step-success');
                     } else {
-                        showNotification("Hatalı kod! (Simülasyon kodu: 123456)", "error");
+                        showNotification("Hatalı kod! (Test kodu: 123456)", "error");
                     }
                 }, 1000);
                 return;
             }
 
-            // Gerçek Doğrulama
+            // Gerçek Kontrol
             if (!confirmationResult) {
-                showNotification("Oturum zaman aşımına uğradı, sayfayı yenileyin.", "error");
+                showNotification("Oturum süresi doldu.", "error");
                 setLoading(btn, false, "Doğrula ve Giriş Yap");
                 return;
             }
 
             confirmationResult.confirm(code).then((result) => {
                 const user = result.user;
-                console.log("Kullanıcı:", user);
+                console.log("Başarılı Giriş:", user);
                 setLoading(btn, false, "Doğrula ve Giriş Yap");
                 goToStep('step-success');
             }).catch((error) => {
                 setLoading(btn, false, "Doğrula ve Giriş Yap");
-                showNotification("Hatalı kod veya kodun süresi dolmuş.", "error");
-                console.error(error);
+                showNotification("Hatalı kod, lütfen tekrar deneyin.", "error");
             });
         }
 
         function resetRecaptchaAndResend() {
              if(window.recaptchaVerifier) {
-                window.recaptchaVerifier.clear();
-                window.recaptchaVerifier = null;
+                try { window.recaptchaVerifier.clear(); window.recaptchaVerifier = null; } catch(e){}
             }
             sendOTP();
         }
@@ -372,7 +319,6 @@
 
         function showNotification(message, type) {
             const el = document.getElementById('notification-area');
-            // Önceki içerikleri ve sınıfları temizle
             el.innerHTML = message;
             el.className = 'mb-4 p-3 rounded text-sm font-medium text-center border';
             
@@ -381,7 +327,6 @@
             } else {
                 el.classList.add('bg-green-100', 'text-green-700', 'border-green-200');
             }
-            
             el.classList.remove('hidden');
         }
 
@@ -397,7 +342,6 @@
                 </button>
             `;
             el.classList.remove('hidden');
-            
             document.getElementById('action-btn').onclick = callback;
         }
 
