@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Giriş Doğrulama</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hidden-step {
+            display: none;
+        }
+        /* Loader */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3498db;
+            width: 20px;
+            height: 20px;
+            -webkit-animation: spin 1s linear infinite; /* Safari */
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4">
+
+    <!-- Ana Kart -->
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative mb-6">
+        
+        <!-- Üst Başlık Kısmı -->
+        <div class="bg-blue-600 p-6 text-center text-white">
+            <div class="mb-3">
+                <i class="fas fa-shield-alt text-4xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold">Güvenli Giriş</h2>
+            <p class="text-blue-100 text-sm mt-1">Lütfen telefon numaranızı doğrulayın</p>
+        </div>
+
+        <div class="p-8">
+            <!-- Bildirim Alanı -->
+            <div id="notification-area" class="hidden mb-4 p-3 rounded text-sm font-medium text-center border"></div>
+
+            <!-- Adım 1: Telefon Numarası Girişi -->
+            <div id="step-phone" class="fade-in">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="phone">
+                    Telefon Numarası
+                </label>
+                <div class="relative mb-6">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-phone text-gray-400"></i>
+                    </div>
+                    <input type="tel" id="phone" 
+                        class="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                        placeholder="+90 5XX XXX XX XX"
+                        value="+90">
+                </div>
+
+                <!-- Recaptcha Container (Firebase için zorunlu) -->
+                <div id="recaptcha-container" class="mb-4 flex justify-center"></div>
+
+                <button onclick="sendOTP()" id="btn-send" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex justify-center items-center gap-2">
+                    <span>Doğrulama Kodu Gönder</span>
+                </button>
+            </div>
+
+            <!-- Adım 2: OTP Girişi -->
+            <div id="step-otp" class="hidden-step fade-in">
+                <div class="text-center mb-6">
+                    <p class="text-gray-600 text-sm">
+                        <span id="display-phone" class="font-bold text-gray-800"></span> numarasına gönderilen 6 haneli kodu giriniz.
+                    </p>
+                    <button onclick="resetFlow()" class="text-blue-500 text-xs hover:underline mt-1">Numarayı Değiştir</button>
+                </div>
+
+                <div class="flex justify-between gap-2 mb-6" id="otp-inputs">
+                    <input type="text" id="otp-code" maxlength="6" 
+                        class="w-full text-center text-2xl tracking-widest py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
+                        placeholder="123456">
+                </div>
+
+                <button onclick="verifyOTP()" id="btn-verify" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex justify-center items-center gap-2">
+                    <span>Doğrula ve Giriş Yap</span>
+                </button>
+                
+                <div class="mt-4 text-center">
+                    <p class="text-xs text-gray-400">Kod gelmedi mi? <span class="text-blue-500 cursor-pointer hover:underline" onclick="resetRecaptchaAndResend()">Tekrar Gönder</span> (30sn)</p>
+                </div>
+            </div>
+            
+            <!-- Başarılı Giriş Ekranı -->
+            <div id="step-success" class="hidden-step fade-in text-center py-6">
+                <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Giriş Başarılı!</h3>
+                <p class="text-gray-600 mb-6">Yönlendiriliyorsunuz...</p>
+                <button onclick="window.location.reload()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-lg">
+                    Çıkış Yap
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- HATA AYIKLAMA KUTUSU: Domain Bilgisi -->
+    <div id="domain-info-box" class="w-full max-w-md bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-xs text-yellow-800 shadow-sm transition-opacity duration-500">
+        <p class="font-bold mb-1"><i class="fas fa-info-circle mr-1"></i> Geliştirici Notu:</p>
+        <p class="mb-2">Gerçek SMS gönderimi için şu anki "blob" adresinin Firebase Console'da yetkili olması gerekir. Önizleme adresi sürekli değiştiği için bu hata almanız normaldir.</p>
+        <div class="flex items-center gap-2 bg-white border border-yellow-300 p-2 rounded">
+            <code id="current-domain" class="flex-1 font-mono text-gray-700 overflow-hidden text-ellipsis"></code>
+            <button onclick="copyDomain()" class="text-blue-600 hover:text-blue-800 font-bold px-2">Kopyala</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <script>
+        // DOMAIN GÖSTERME (Hata Ayıklama İçin)
+        const hostname = window.location.hostname;
+        document.getElementById('current-domain').innerText = hostname;
+
+        function copyDomain() {
+            const textArea = document.createElement("textarea");
+            textArea.value = hostname;
+            
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.style.top = "0";
+            document.body.appendChild(textArea);
+            
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if(successful) {
+                     alert("Domain kopyalandı! Firebase Console'a eklemeyi unutmayın.");
+                } else {
+                     prompt("Domain:", hostname);
+                }
+            } catch (err) {
+                console.error('Kopyalama hatası:', err);
+                prompt("Domain:", hostname);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        // ==========================================
+        // AYARLAR
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDWhGyTxXYHS77mG0C1HwVImOOZBmHWKeI",
+            authDomain: "smsdogrulama.firebaseapp.com",
+            projectId: "smsdogrulama",
+            storageBucket: "smsdogrulama.firebasestorage.app",
+            messagingSenderId: "394188723036",
+            appId: "1:394188723036:web:b4708c8c688aa347c1e799"
+        };
+
+        // Başlangıçta gerçek modda başlatmayı dene, ama hata olursa kullanıcıya seçenek sun
+        let isSimulationMode = false; 
+
+        // ==========================================
+        // UYGULAMA MANTIĞI
+        // ==========================================
+
+        let confirmationResult = null;
+        let app, auth;
+
+        // Firebase Başlatma
+        try {
+            app = firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            auth.languageCode = 'tr';
+            setupRecaptcha(); // Sayfa yüklenirken hazırla
+        } catch (e) {
+            console.error("Firebase init error:", e);
+            showNotification("Firebase başlatılamadı.", "error");
+        }
+
+        function setupRecaptcha() {
+            // Eğer simülasyon modundaysak recaptcha'ya gerek yok
+            if (isSimulationMode) return;
+
+            if (!window.recaptchaVerifier) {
+                try {
+                    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                        'size': 'invisible',
+                        'callback': (response) => {
+                            console.log("Recaptcha doğrulandı");
+                        },
+                        'expired-callback': () => {
+                            console.log("Recaptcha süresi doldu");
+                        }
+                    });
+                    window.recaptchaVerifier.render();
+                } catch(e) {
+                    console.error("Recaptcha setup error:", e);
+                }
+            }
+        }
+
+        function switchToSimulation() {
+            isSimulationMode = true;
+            document.getElementById('domain-info-box').style.display = 'none';
+            showNotification("Simülasyon moduna geçildi. Artık test edebilirsiniz.", "success");
+            // Recaptcha containerı temizle
+            document.getElementById('recaptcha-container').innerHTML = '';
+            // Otomatik olarak tekrar gönder
+            setTimeout(sendOTP, 1000);
+        }
+
+        function sendOTP() {
+            const phoneNumber = document.getElementById('phone').value;
+            const btn = document.getElementById('btn-send');
+
+            if (phoneNumber.length < 10) {
+                showNotification("Lütfen geçerli bir telefon numarası girin.", "error");
+                return;
+            }
+
+            setLoading(btn, true, "Kod Gönderiliyor...");
+
+            // SİMÜLASYON MODU
+            if (isSimulationMode) {
+                setTimeout(() => {
+                    setLoading(btn, false, "Doğrulama Kodu Gönder");
+                    showNotification("Simülasyon: Kod gönderildi (123456)", "success");
+                    goToStep('step-otp');
+                    document.getElementById('display-phone').innerText = phoneNumber;
+                }, 1500);
+                return;
+            }
+
+            // GERÇEK MOD
+            if (!window.recaptchaVerifier) {
+                setupRecaptcha();
+            }
+
+            const appVerifier = window.recaptchaVerifier;
+
+            auth.signInWithPhoneNumber(phoneNumber, appVerifier)
+                .then((result) => {
+                    confirmationResult = result;
+                    setLoading(btn, false, "Doğrulama Kodu Gönder");
+                    showNotification("Doğrulama kodu gönderildi!", "success");
+                    goToStep('step-otp');
+                    document.getElementById('display-phone').innerText = phoneNumber;
+                }).catch((error) => {
+                    setLoading(btn, false, "Doğrulama Kodu Gönder");
+                    console.error("SMS Error:", error);
+                    
+                    let msg = "Bir hata oluştu: " + error.message;
+                    
+                    // ÖZEL HATA YÖNETİMİ: Domain veya Yetki Hatası
+                    if(error.code === 'auth/internal-error' || error.code === 'auth/network-request-failed') {
+                        showErrorWithAction(
+                            "Domain yetki hatası (Firebase güvenlik engeli).",
+                            "Önizleme ortamında domain sürekli değiştiği için bu normaldir. Test için simülasyon moduna geçin.",
+                            "Simülasyon Moduna Geç",
+                            switchToSimulation
+                        );
+                        return; // Standart bildirimi gösterme
+                    } 
+                    else if(error.code === 'auth/invalid-phone-number') {
+                        msg = "Geçersiz telefon numarası formatı.";
+                    } else if(error.code === 'auth/too-many-requests') {
+                        msg = "Çok fazla deneme yapıldı. Lütfen biraz bekleyin.";
+                    }
+                    
+                    showNotification(msg, "error");
+                    
+                    // Recaptcha resetlemeyi dene
+                    if(window.recaptchaVerifier) {
+                        try {
+                            window.recaptchaVerifier.render().then(function(widgetId) {
+                                grecaptcha.reset(widgetId);
+                            });
+                        } catch(e) { 
+                             window.recaptchaVerifier.clear();
+                             window.recaptchaVerifier = null;
+                        }
+                    }
+                });
+        }
+
+        function verifyOTP() {
+            const code = document.getElementById('otp-code').value;
+            const btn = document.getElementById('btn-verify');
+
+            if (code.length !== 6) {
+                showNotification("Lütfen 6 haneli kodu eksiksiz girin.", "error");
+                return;
+            }
+
+            setLoading(btn, true, "Doğrulanıyor...");
+
+            // Simülasyon Doğrulaması
+            if (isSimulationMode) {
+                 setTimeout(() => {
+                    setLoading(btn, false, "Doğrula ve Giriş Yap");
+                    if (code === "123456") {
+                        goToStep('step-success');
+                    } else {
+                        showNotification("Hatalı kod! (Simülasyon kodu: 123456)", "error");
+                    }
+                }, 1000);
+                return;
+            }
+
+            // Gerçek Doğrulama
+            if (!confirmationResult) {
+                showNotification("Oturum zaman aşımına uğradı, sayfayı yenileyin.", "error");
+                setLoading(btn, false, "Doğrula ve Giriş Yap");
+                return;
+            }
+
+            confirmationResult.confirm(code).then((result) => {
+                const user = result.user;
+                console.log("Kullanıcı:", user);
+                setLoading(btn, false, "Doğrula ve Giriş Yap");
+                goToStep('step-success');
+            }).catch((error) => {
+                setLoading(btn, false, "Doğrula ve Giriş Yap");
+                showNotification("Hatalı kod veya kodun süresi dolmuş.", "error");
+                console.error(error);
+            });
+        }
+
+        function resetRecaptchaAndResend() {
+             if(window.recaptchaVerifier) {
+                window.recaptchaVerifier.clear();
+                window.recaptchaVerifier = null;
+            }
+            sendOTP();
+        }
+
+        function goToStep(stepId) {
+            document.querySelectorAll('.fade-in').forEach(el => {
+                if (!el.classList.contains('hidden-step') && el.id.startsWith('step-')) {
+                    el.classList.add('hidden-step');
+                }
+            });
+            document.getElementById(stepId).classList.remove('hidden-step');
+        }
+
+        function resetFlow() {
+            document.getElementById('otp-code').value = '';
+            goToStep('step-phone');
+        }
+
+        function showNotification(message, type) {
+            const el = document.getElementById('notification-area');
+            // Önceki içerikleri ve sınıfları temizle
+            el.innerHTML = message;
+            el.className = 'mb-4 p-3 rounded text-sm font-medium text-center border';
+            
+            if (type === 'error') {
+                el.classList.add('bg-red-100', 'text-red-700', 'border-red-200');
+            } else {
+                el.classList.add('bg-green-100', 'text-green-700', 'border-green-200');
+            }
+            
+            el.classList.remove('hidden');
+        }
+
+        function showErrorWithAction(title, desc, btnText, callback) {
+            const el = document.getElementById('notification-area');
+            el.className = 'mb-4 p-4 rounded text-sm text-left border bg-red-50 border-red-200 text-red-800';
+            
+            el.innerHTML = `
+                <div class="font-bold mb-1"><i class="fas fa-exclamation-circle"></i> ${title}</div>
+                <div class="mb-3 text-xs opacity-90">${desc}</div>
+                <button id="action-btn" class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 text-xs font-bold transition w-full">
+                    ${btnText}
+                </button>
+            `;
+            el.classList.remove('hidden');
+            
+            document.getElementById('action-btn').onclick = callback;
+        }
+
+        function setLoading(btnElement, isLoading, text) {
+            if (isLoading) {
+                btnElement.disabled = true;
+                btnElement.classList.add('opacity-75', 'cursor-not-allowed');
+                btnElement.innerHTML = `<div class="loader mr-2"></div> İşlem yapılıyor...`;
+            } else {
+                btnElement.disabled = false;
+                btnElement.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnElement.innerHTML = `<span>${text}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
