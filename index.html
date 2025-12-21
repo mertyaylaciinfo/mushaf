@@ -72,7 +72,7 @@
                         value="+90">
                 </div>
 
-                <!-- Recaptcha Container (Firebase için zorunlu) -->
+                <!-- Recaptcha Container (Bu alan her seferinde temizlenecek) -->
                 <div id="recaptcha-container" class="mb-4 flex justify-center"></div>
 
                 <button onclick="sendOTP()" id="btn-send" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex justify-center items-center gap-2">
@@ -100,7 +100,7 @@
                 </button>
                 
                 <div class="mt-4 text-center">
-                    <p class="text-xs text-gray-400">Kod gelmedi mi? <span class="text-blue-500 cursor-pointer hover:underline" onclick="resetRecaptchaAndResend()">Tekrar Gönder</span> (30sn)</p>
+                    <p class="text-xs text-gray-400">Kod gelmedi mi? <span class="text-blue-500 cursor-pointer hover:underline" onclick="resetRecaptchaAndResend()">Tekrar Gönder</span></p>
                 </div>
             </div>
             
@@ -125,8 +125,10 @@
 
     <script>
         // ==========================================
-        // GÜNCEL CONFIG
+        // CONFIG BÖLÜMÜ
         // ==========================================
+        // NOT: Buradaki bilgileri kendi Firebase projenizden aldığınız
+        // güncel bilgilerle değiştirdiğinizden emin olun.
         const firebaseConfig = {
             apiKey: "AIzaSyDWhGyTxXYHS77mG0C1HwVImOOZBmHWKeI",
             authDomain: "smsdogrulama.firebaseapp.com",
@@ -136,7 +138,7 @@
             appId: "1:394188723036:web:b4708c8c688aa347c1e799"
         };
 
-        // Hata durumunda kurtarıcı mod
+        // Simülasyon modu (Hata durumunda açılır)
         let isSimulationMode = false;
 
         let confirmationResult = null;
@@ -151,33 +153,49 @@
             console.error("Firebase init error:", e);
         }
 
-        // Recaptcha Hazırlığı
+        // ============================================================
+        // HATA DÜZELTMESİ: Recaptcha Temizleme ve Kurma
+        // ============================================================
         function setupRecaptcha() {
             if (isSimulationMode) return; 
 
-            if (!window.recaptchaVerifier) {
+            // 1. ADIM: Varsa eski Recaptcha'yı temizle
+            if (window.recaptchaVerifier) {
                 try {
-                    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                        'size': 'invisible',
-                        'callback': (response) => { console.log("Recaptcha verified"); },
-                        'expired-callback': () => {
-                             showNotification("Doğrulama zaman aşımı.", "error");
-                        }
-                    });
-                    window.recaptchaVerifier.render();
+                    window.recaptchaVerifier.clear();
                 } catch(e) {
-                    console.error("Recaptcha error:", e);
+                    // Hata olursa görmezden gel, devam et
+                    console.log("Recaptcha temizleme uyarısı:", e);
                 }
+                window.recaptchaVerifier = null;
+            }
+
+            // 2. ADIM: HTML kutusunun içini boşalt (Çok önemli!)
+            const container = document.getElementById('recaptcha-container');
+            if(container) container.innerHTML = '';
+
+            // 3. ADIM: Yeni Recaptcha oluştur
+            try {
+                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                    'size': 'invisible',
+                    'callback': (response) => { console.log("Recaptcha doğrulandı"); },
+                    'expired-callback': () => {
+                         showNotification("Doğrulama zaman aşımı.", "error");
+                    }
+                });
+                // Render işlemini hemen başlatma, SMS gönderirken otomatik yapılacak
+            } catch(e) {
+                console.error("Recaptcha oluşturma hatası:", e);
             }
         }
 
+        // Sayfa yüklendiğinde bir kere çalıştır
         window.onload = setupRecaptcha;
 
         function switchToSimulation() {
             isSimulationMode = true;
             document.getElementById('recaptcha-container').innerHTML = ''; // Temizle
             showNotification("Simülasyon Modu Aktif: Kod 123456", "success");
-            // Otomatik yeniden dene
             setTimeout(sendOTP, 1000);
         }
 
@@ -205,7 +223,9 @@
             }
 
             // === GERÇEK MOD ===
+            // Her gönderimden önce recaptcha'yı güvenli hale getir
             if (!window.recaptchaVerifier) setupRecaptcha();
+            
             const appVerifier = window.recaptchaVerifier;
 
             auth.signInWithPhoneNumber(phoneNumber, appVerifier)
@@ -222,8 +242,8 @@
                     // --- HATA YÖNETİMİ ---
                     if (error.code === 'auth/billing-not-enabled') {
                         showErrorWithAction(
-                            "Paket Henüz Aktif Değil",
-                            "Google ödemenizi işliyor olabilir. Genellikle 5-10 dakika sürer. Beklerken Simülasyon modunda deneyebilirsiniz.",
+                            "Paket Henüz Aktif Değil veya Yanlış Proje",
+                            "Ödemeniz henüz yansımamış veya kodunuzdaki Config bilgileri eski. Test için simülasyonu kullanabilirsiniz.",
                             "Simülasyon ile Devam Et",
                             switchToSimulation
                         );
@@ -232,7 +252,7 @@
                     else if (error.code === 'auth/internal-error') {
                         showErrorWithAction(
                             "Domain Hatası",
-                            "Sitenizin adresi değiştiği için Firebase engelledi. Test moduna geçebilirsiniz.",
+                            "Firebase güvenlik nedeniyle reddetti. Test moduna geçebilirsiniz.",
                             "Simülasyon ile Devam Et",
                             switchToSimulation
                         );
@@ -246,10 +266,8 @@
                         showNotification("Hata: " + error.message, "error");
                     }
 
-                    // Recaptcha reset
-                    if(window.recaptchaVerifier) {
-                        try { window.recaptchaVerifier.clear(); window.recaptchaVerifier = null; } catch(e){}
-                    }
+                    // Hata durumunda Recaptcha'yı temizle ki sonraki denemede çakışmasın
+                    setupRecaptcha();
                 });
         }
 
@@ -297,9 +315,7 @@
         }
 
         function resetRecaptchaAndResend() {
-             if(window.recaptchaVerifier) {
-                try { window.recaptchaVerifier.clear(); window.recaptchaVerifier = null; } catch(e){}
-            }
+            setupRecaptcha(); // Temizle ve yeniden kur
             sendOTP();
         }
 
