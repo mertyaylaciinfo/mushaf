@@ -388,8 +388,8 @@
             {id:89,name:"Fecr",page:592},{id:90,name:"Beled",page:593},{id:91,name:"Şems",page:594},{id:92,name:"Leyl",page:594},
             {id:93,name:"Duhâ",page:595},{id:94,name:"İnşirâh",page:595},{id:95,name:"Tîn",page:596},{id:96,name:"Alak",page:596},
             {id:97,name:"Kadir",page:597},{id:98,name:"Beyyine",page:597},{id:99,name:"Zilzâl",page:598},{id:100,name:"Âdiyât",page:598},
-            {id:101,name:"Kâria",page:599},{id:102,name:"Tekâsür",page:599},{id:103,name:"Asr",page:600},{id:104,name:"Hümeze",page:600},
-            {id:105,name:"Fîl",page:600},{id:106,name:"Kureyş",page:601},{id:107,name:"Mâûn",page:601},{id:108,name:"Kevser",page:601},
+            {id:101,name:"Kâria",page:599},{id:102,name:"Tekâsür",page:599},{id:103,name:"Asr",page:601},{id:104,name:"Hümeze",page:601},
+            {id:105,name:"Fîl",page:601},{id:106,name:"Kureyş",page:601},{id:107,name:"Mâûn",page:601},{id:108,name:"Kevser",page:601},
             {id:109,name:"Kâfirûn",page:602},{id:110,name:"Nasr",page:602},{id:111,name:"Tebbet",page:602},{id:112,name:"İhlâs",page:604},
             {id:113,name:"Felâk",page:604},{id:114,name:"Nâs",page:604}
         ];
@@ -424,6 +424,34 @@
         document.addEventListener('DOMContentLoaded', () => {
             updateDate(); loadTasks(); loadDhikrState(); initZikirGestures(); populateDhikrList(); loadHatimList();
             fetchPage(0);
+            
+            // --- SWIPE EVENT LISTENERS ---
+            const display = document.getElementById('quran-display');
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            display.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+
+            display.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, {passive: true});
+
+            function handleSwipe() {
+                // Eğer auto-scroll açıksa swipe'ı engelleme (kullanıcı tercihine göre değişebilir ama genelde açıkken de istenir)
+                // Ancak çok küçük hareketleri algılamamak için threshold koyalım
+                if (Math.abs(touchEndX - touchStartX) < 50) return; // 50px altı hareketleri yoksay
+
+                if (touchEndX < touchStartX) {
+                    // Sola Kaydır -> İleri Git
+                    changePage(1);
+                } else if (touchEndX > touchStartX) {
+                    // Sağa Kaydır -> Geri Git
+                    changePage(-1);
+                }
+            }
         });
 
         function normalizeTr(text) { return text.toLocaleLowerCase('tr').replace(/â/g, 'a').replace(/î/g, 'i').replace(/û/g, 'u'); }
@@ -504,7 +532,7 @@
                 // DURDUR
                 isAutoScrolling = false;
                 if(animationFrameId) cancelAnimationFrame(animationFrameId);
-                
+                // Class-based switching
                 scrollTools.classList.add('hidden-force');
                 scrollTools.classList.remove('flex-force');
                 defaultTools.classList.remove('hidden-force');
@@ -514,7 +542,6 @@
             } else {
                 // BAŞLAT
                 isAutoScrolling = true;
-                
                 defaultTools.classList.add('hidden-force');
                 defaultTools.classList.remove('flex-force');
                 scrollTools.classList.remove('hidden-force');
