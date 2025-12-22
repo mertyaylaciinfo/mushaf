@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Üç Aylar Rehberi</title>
     
     <!-- Tailwind CSS -->
@@ -28,7 +28,9 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
         
-        /* Tab Geçişleri */
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+        .pt-safe { padding-top: env(safe-area-inset-top, 20px); }
+        
         .tab-content { display: none; height: 100%; }
         .tab-content.active { display: flex; flex-direction: column; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -53,6 +55,7 @@
             transition: all 0.2s;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             cursor: pointer;
+            flex-shrink: 0;
         }
         .tool-btn:hover { background-color: #d1fae5; color: #047857; transform: scale(1.05); }
         .tool-btn:active { transform: scale(0.95); }
@@ -91,13 +94,107 @@
         .suggestion-item:hover { background-color: #ecfdf5; }
         .suggestion-item:last-child { border-bottom: none; }
         
+        /* Yardımcı Sınıflar */
+        .hidden-force { display: none !important; }
+        .flex-force { display: flex !important; }
+
+        /* --- OKUMA MODU (READING MODE) STİLLERİ --- */
+        body.reading-mode header,
+        body.reading-mode #main-nav,
+        body.reading-mode .sticky {
+            display: none !important;
+        }
+        
+        body.reading-mode .w-full.max-w-md {
+            max-width: 100% !important;
+            height: 100vh !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+        }
+
+        body.reading-mode #tab-quran {
+            height: 100vh !important;
+            width: 100vw !important;
+        }
+
+        body.reading-mode #quran-display {
+            padding: 0 !important;
+            background-color: #fffdf5;
+            touch-action: pan-y; /* Yatay hareketi JS'e bırak, dikey native kalsın */
+        }
+        
+        /* Okuma Modu Layout (FLEX) */
+        #reading-mode-layout {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: row; /* Yan yana */
+        }
+        
+        body.reading-mode #reading-mode-layout {
+            display: flex;
+        }
+
+        /* Sidebar Kontrolleri (Statik, Flex Item) */
+        .reading-sidebar {
+            width: 70px;
+            background-color: #f9fafb;
+            border-left: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 10px;
+            z-index: 50;
+            flex-shrink: 0; /* Küçülmesin */
+        }
+        
+        /* İçerik Alanı (Flex Grow) */
+        #reading-display {
+            flex: 1;
+            height: 100%;
+            overflow-y: auto;
+            position: relative;
+            background-color: #fffdf5;
+            touch-action: pan-y; /* Önemli: Yatay swipe için */
+        }
+        
+        .reading-info-box {
+            text-align: center;
+            margin-bottom: auto;
+            margin-top: 10px;
+            width: 100%;
+        }
+        
+        .reading-info-item {
+            display: block;
+            font-size: 0.65rem;
+            color: #4b5563;
+            margin-bottom: 4px;
+            background: #ffffff;
+            padding: 4px;
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+            font-weight: 600;
+        }
+        
+        .reading-info-title {
+            color: #059669;
+        }
+
+        body.reading-mode #quran-page-image {
+            width: 100% !important;
+            height: auto !important;
+            max-height: none !important;
+            object-fit: contain;
+            display: block;
+        }
+        
         /* --- YATAY MOD (LANDSCAPE) STİLLERİ --- */
-        /* Düzeltme: max-height 600px yapılarak masaüstünde yanlışlıkla açılması engellendi */
         @media only screen and (orientation: landscape) and (max-height: 600px) {
-            /* Gereksizleri Gizle */
             header, #main-nav, .sticky, #default-tools, #scroll-tools { display: none !important; }
             
-            /* Ana Kapsayıcıyı Sıfırla ve Tam Ekran Yap */
             .w-full.max-w-md {
                 max-width: none !important;
                 width: 100% !important;
@@ -107,7 +204,6 @@
                 box-shadow: none !important;
             }
             
-            /* Kuran Sekmesi Tam Ekran */
             #tab-quran {
                 display: flex !important;
                 height: 100vh !important;
@@ -119,48 +215,32 @@
                 background: #fffdf5;
             }
             
-            /* Scroll Alanı */
-            #quran-display {
-                height: 100% !important;
-                width: 100% !important;
-                padding: 0 !important;
-                scroll-behavior: smooth;
-                background: #fffdf5;
-            }
-            
-            /* Resim Konteyneri */
-            #arabic-page {
-                width: 100% !important;
-                min-height: 100% !important;
-                display: block !important;
-                padding: 0 !important;
-            }
-            
-            /* Resim Ayarı - Genişliğe Yayılır, Aşağı Doğru Uzar */
-            #quran-page-image {
-                width: 100% !important;
-                height: auto !important;
-                max-width: none !important;
-                max-height: none !important;
-                display: block;
-                object-fit: cover;
-            }
-            
-            /* Landscape Kontrolleri Görünür */
-            #landscape-ui { display: flex !important; }
+            /* Landscape'de otomatik olarak Reading Mode Layout yapısına geç */
+            #normal-ui { display: none !important; }
+            #reading-mode-layout { display: flex !important; }
         }
-
-        /* Yardımcı Sınıflar */
-        .hidden-force { display: none !important; }
-        .flex-force { display: flex !important; }
+        
+        .land-btn {
+            width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            background-color: white;
+            color: #374151;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .land-btn:active { transform: scale(0.9); }
+        .land-btn.primary { background-color: #10b981; color: white; border: none; }
     </style>
 </head>
 <body class="text-gray-800 h-screen flex justify-center overflow-hidden bg-gray-100">
 
-    <div class="w-full max-w-md h-full bg-white shadow-2xl relative flex flex-col overflow-hidden sm:rounded-xl sm:h-[95vh] sm:my-auto transition-all duration-300">
+    <div id="main-container" class="w-full max-w-md h-full bg-white shadow-2xl relative flex flex-col overflow-hidden sm:rounded-xl sm:h-[95vh] sm:my-auto transition-all duration-300">
         
         <!-- Header -->
-        <header class="bg-emerald-600 text-white p-3 shadow-md z-20 shrink-0 flex justify-between items-center">
+        <header class="bg-emerald-600 text-white p-3 shadow-md z-20 shrink-0 flex justify-between items-center pt-safe">
             <div>
                 <h1 class="text-lg font-bold tracking-tight flex items-center gap-2">
                     <i class="fas fa-moon text-yellow-300"></i> <span>Üç Aylar Rehberi</span>
@@ -176,7 +256,7 @@
         <main class="flex-1 overflow-hidden bg-gray-50 relative">
             
             <!-- GÜNLÜK TAB -->
-            <div id="tab-home" class="tab-content active overflow-y-auto p-4 space-y-4">
+            <div id="tab-home" class="tab-content active overflow-y-auto p-4 space-y-4 pb-28">
                 <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden shrink-0">
                     <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
                     <h2 class="font-bold text-lg mb-1">Günün Ayeti</h2>
@@ -195,81 +275,90 @@
             <!-- KURAN TAB -->
             <div id="tab-quran" class="tab-content flex-col h-full bg-white relative">
                 
-                <div class="sticky top-0 bg-white/95 backdrop-blur z-30 shadow-sm border-b border-emerald-50 pb-2 flex flex-col">
-                    <!-- Arama -->
-                    <div class="flex items-center px-3 py-2 gap-3 relative">
-                        <div class="relative flex-1">
-                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
-                            <input type="text" id="unified-search" oninput="handleSearchInput(this.value)" onfocus="handleSearchInput(this.value)" placeholder="Sure, Cüz, Sayfa..." class="w-full pl-8 pr-2 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm transition">
-                            <!-- Öneri Listesi -->
-                            <div id="search-suggestions" class="hidden"></div>
+                <!-- Normal Mod Arayüzü -->
+                <div id="normal-ui" class="flex flex-col h-full">
+                    <div class="sticky top-0 bg-white/95 backdrop-blur z-30 shadow-sm border-b border-emerald-50 pb-2 flex flex-col">
+                        <!-- Arama -->
+                        <div class="flex items-center px-3 py-2 gap-3 relative">
+                            <div class="relative flex-1">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+                                <input type="text" id="unified-search" oninput="handleSearchInput(this.value)" onfocus="handleSearchInput(this.value)" placeholder="Sure, Cüz, Sayfa..." class="w-full pl-8 pr-2 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm transition">
+                                <div id="search-suggestions" class="hidden"></div>
+                            </div>
+                            <div class="text-right flex flex-col justify-center min-w-[90px]">
+                                <span id="current-surah-info" class="text-sm font-bold text-emerald-800 leading-tight">Fâtiha</span>
+                                <span id="current-juz-info" class="text-[10px] text-gray-500 font-medium tracking-wide">1. Cüz</span>
+                            </div>
                         </div>
-                        <div class="text-right flex flex-col justify-center min-w-[90px]">
-                            <span id="current-surah-info" class="text-sm font-bold text-emerald-800 leading-tight">Fâtiha</span>
-                            <span id="current-juz-info" class="text-[10px] text-gray-500 font-medium tracking-wide">1. Cüz</span>
+
+                        <!-- Butonlar & Navigasyon -->
+                        <div class="flex items-center justify-between px-3 gap-2 h-10 relative">
+                            <div class="flex items-center gap-1 bg-gray-50 p-0.5 rounded-xl border border-gray-100">
+                                <button onclick="changePage(-1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-gray-500 hover:text-emerald-600 shadow-sm"><i class="fas fa-chevron-left text-xs"></i></button>
+                                <span class="text-xs font-bold w-9 text-center text-gray-700 page-badge" id="page-num">0</span>
+                                <button onclick="changePage(1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-gray-500 hover:text-emerald-600 shadow-sm"><i class="fas fa-chevron-right text-xs"></i></button>
+                            </div>
+
+                            <div id="default-tools" class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                                <button onclick="saveHatimLocation()" class="tool-btn" title="Kaydet"><i class="fas fa-bookmark"></i></button>
+                                <button onclick="openModal('hatimListModal')" class="tool-btn" title="Hatimler"><i class="fas fa-layer-group"></i></button>
+                                <button onclick="toggleAutoScroll()" class="tool-btn" title="Oto Kaydır"><i class="fas fa-circle-play"></i></button>
+                                <button onclick="openTranslation()" class="tool-btn" title="Meal"><i class="fas fa-book-open"></i></button>
+                                <button onclick="toggleReadingMode()" class="tool-btn" title="Okuma Modu"><i class="fas fa-expand"></i></button>
+                            </div>
+
+                            <div id="scroll-tools" class="hidden-force flex items-center gap-2 bg-white flex-1 justify-end">
+                                <div class="flex items-center gap-2 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
+                                    <button onclick="adjustScrollSpeed(-1)" class="speed-btn" title="Yavaşlat">-</button>
+                                    <span id="speed-display" class="text-xs font-bold text-emerald-700 w-6 text-center">10</span>
+                                    <button onclick="adjustScrollSpeed(1)" class="speed-btn" title="Hızlandır">+</button>
+                                </div>
+                                <button onclick="toggleAutoScroll()" class="w-9 h-9 flex items-center justify-center rounded-full bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition shadow-sm" title="Durdur">
+                                    <i class="fas fa-stop text-sm"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Butonlar & Navigasyon -->
-                    <div class="flex items-center justify-between px-3 gap-2 h-10 relative">
-                        <!-- Sayfa Değiştir -->
-                        <div class="flex items-center gap-1 bg-gray-50 p-0.5 rounded-xl border border-gray-100">
-                            <button onclick="changePage(-1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-gray-500 hover:text-emerald-600 shadow-sm"><i class="fas fa-chevron-left text-xs"></i></button>
-                            <span class="text-xs font-bold w-9 text-center text-gray-700 page-badge" id="page-num">0</span>
-                            <button onclick="changePage(1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-gray-500 hover:text-emerald-600 shadow-sm"><i class="fas fa-chevron-right text-xs"></i></button>
-                        </div>
-
-                        <!-- ARAÇLAR (Varsayılan) -->
-                        <div id="default-tools" class="flex items-center gap-2">
-                            <button onclick="saveHatimLocation()" class="tool-btn" title="Kaydet"><i class="fas fa-bookmark"></i></button>
-                            <button onclick="openModal('hatimListModal')" class="tool-btn" title="Hatimler"><i class="fas fa-layer-group"></i></button>
-                            <button onclick="toggleAutoScroll()" class="tool-btn" title="Oto Kaydır"><i class="fas fa-circle-play"></i></button>
-                            <button onclick="openTranslation()" class="tool-btn" title="Meal"><i class="fas fa-book-open"></i></button>
-                        </div>
-
-                        <!-- SCROLL KONTROL (Artı/Eksi Butonlu) -->
-                        <div id="scroll-tools" class="hidden-force flex items-center gap-2 bg-white flex-1 justify-end">
-                            <div class="flex items-center gap-2 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
-                                <button onclick="adjustScrollSpeed(-1)" class="speed-btn" title="Yavaşlat">-</button>
-                                <span id="speed-display" class="text-xs font-bold text-emerald-700 w-6 text-center">10</span>
-                                <button onclick="adjustScrollSpeed(1)" class="speed-btn" title="Hızlandır">+</button>
-                            </div>
-                            <button onclick="toggleAutoScroll()" class="w-9 h-9 flex items-center justify-center rounded-full bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition shadow-sm" title="Durdur">
-                                <i class="fas fa-stop text-sm"></i>
-                            </button>
+                    <!-- Okuma Alanı (Normal) -->
+                    <div id="quran-display" class="quran-container flex-1 overflow-y-auto bg-gray-50 pb-32 relative text-center">
+                        <div id="arabic-page" class="w-full min-h-full flex flex-col items-center justify-start py-2">
+                             <img id="quran-page-image" src="" alt="Kuran Sayfası" class="max-w-full w-auto h-auto shadow-sm rounded-sm" style="max-height: 100%;">
                         </div>
                     </div>
                 </div>
 
-                <!-- Okuma Alanı -->
-                <div id="quran-display" class="quran-container flex-1 overflow-y-auto bg-gray-50 pb-24 relative text-center">
-                    <div id="arabic-page" class="w-full min-h-full flex flex-col items-center justify-start py-2">
-                         <img id="quran-page-image" src="" alt="Kuran Sayfası" class="max-w-full w-auto h-auto shadow-sm rounded-sm" style="max-height: 100%;">
+                <!-- Okuma Modu Arayüzü (Bölünmüş Ekran - Sol: Sayfa, Sağ: Araçlar) -->
+                <div id="reading-mode-layout" class="hidden h-full w-full bg-[#fffdf5]">
+                    <!-- Sol Taraf: Sayfa -->
+                    <div id="reading-display" class="flex-1 h-full overflow-y-auto relative no-scrollbar">
+                        <!-- Görsel JS ile buraya yüklenecek -->
+                    </div>
+                    
+                    <!-- Sağ Taraf: Sabit Panel -->
+                    <div class="reading-sidebar">
+                        <div class="reading-info-box">
+                            <span class="reading-info-item" id="reading-juz-info">1. Cüz</span>
+                            <span class="reading-info-item reading-info-title" id="reading-surah-info">Fâtiha</span>
+                            <span class="reading-info-item">Sayfa <span id="reading-page-info">0</span></span>
+                        </div>
+
+                        <button onclick="toggleReadingMode()" class="land-btn" style="background-color:#ef4444; color:white; border:none; margin-top:20px;" title="Çıkış">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        
+                        <div class="flex flex-col items-center gap-2 w-full mt-4">
+                             <button onclick="adjustScrollSpeed(1)" class="speed-btn w-8 h-8 text-xs">+</button>
+                             <span id="speed-display-reading" class="text-sm font-bold text-emerald-700">10</span>
+                             <button onclick="adjustScrollSpeed(-1)" class="speed-btn w-8 h-8 text-xs">-</button>
+                        </div>
+
+                        <button onclick="toggleAutoScroll()" id="reading-play-btn" class="land-btn primary" style="width:48px; height:48px; margin-top:15px;">
+                            <i class="fas fa-play text-lg"></i>
+                        </button>
                     </div>
                 </div>
                 
-                <!-- YATAY MOD KONTROLLERİ (Sadece Landscape Modda Görünür) -->
-                <div id="landscape-ui" class="hidden absolute top-0 right-0 bottom-0 w-16 bg-black/30 flex-col items-center justify-center gap-4 z-50 p-2 backdrop-blur-sm transition-opacity hover:opacity-100 opacity-0">
-                     <!-- Çıkış / Normal Görünüm Butonu -->
-                     <button onclick="alert('Lütfen cihazınızı dikey konuma getirin.');" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-lg hover:scale-110 transition" title="Menüyü Göster">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                     <button onclick="toggleFullscreen()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-lg hover:scale-110 transition" title="Tam Ekran">
-                        <i class="fas fa-expand"></i>
-                    </button>
-                    
-                    <!-- Hız Kontrolü (Dikey) -->
-                    <div class="flex flex-col items-center gap-2 bg-white/90 p-2 rounded-full shadow-lg">
-                        <button onclick="adjustScrollSpeed(1)" class="speed-btn w-8 h-8 text-xs">+</button>
-                        <span id="speed-display-land" class="text-xs font-bold text-emerald-700">10</span>
-                        <button onclick="adjustScrollSpeed(-1)" class="speed-btn w-8 h-8 text-xs">-</button>
-                    </div>
-                    
-                    <button onclick="toggleAutoScroll()" id="land-play-btn" class="w-12 h-12 flex items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg pulse hover:bg-emerald-700 transition">
-                        <i class="fas fa-play"></i>
-                    </button>
-                </div>
-
                 <!-- Meal Alanı -->
                 <div id="translation-overlay" class="hidden absolute inset-0 top-[110px] bg-white z-40 flex flex-col animate-fadeIn shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-t-3xl border-t border-emerald-100">
                      <div class="bg-emerald-50/80 backdrop-blur p-4 flex justify-between items-center border-b border-emerald-100 rounded-t-3xl">
@@ -286,7 +375,7 @@
             </div>
 
             <!-- ZİKİR TAB -->
-            <div id="tab-zikir" class="tab-content h-full relative overflow-hidden bg-slate-50 select-none">
+            <div id="tab-zikir" class="tab-content h-full relative overflow-hidden bg-slate-50 select-none pb-24">
                 <div class="absolute top-0 left-0 right-0 p-8 z-30 text-center pointer-events-none">
                     <h3 id="current-dhikr-name" class="text-2xl font-bold text-emerald-800 drop-shadow-sm">Subhanallah</h3>
                     <div class="mt-4 inline-block bg-white/90 backdrop-blur px-8 py-2 rounded-2xl shadow-sm border border-emerald-100">
@@ -301,10 +390,10 @@
                         <div class="bead" style="top: 280px;"></div><div class="bead" style="top: 335px;"></div>
                     </div>
                 </div>
-                <div class="absolute bottom-24 left-0 right-0 text-center text-gray-400 text-xs animate-pulse pointer-events-none z-20">
+                <div class="absolute bottom-24 left-0 right-0 text-center text-gray-400 text-xs animate-pulse pointer-events-none z-20 pb-safe">
                     <i class="fas fa-hand-pointer mb-1"></i><br>Ekranda herhangi bir yerden<br>aşağı doğru çekin
                 </div>
-                <div class="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 flex gap-3 z-30">
+                <div class="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 flex gap-3 z-30 pb-safe mb-16">
                     <button onclick="resetDhikr()" class="p-3 text-gray-400 hover:text-red-500 transition rounded-lg border border-gray-100"><i class="fas fa-sync-alt"></i></button>
                     <button onclick="toggleDhikrList()" class="flex-1 bg-emerald-600 text-white rounded-lg font-medium shadow hover:bg-emerald-700 transition py-3">Zikir Değiştir</button>
                 </div>
@@ -321,7 +410,7 @@
         </main>
 
         <!-- Navbar -->
-        <nav id="main-nav" class="bg-white border-t border-gray-200 absolute bottom-0 w-full pb-safe z-40">
+        <nav id="main-nav" class="bg-white border-t border-gray-200 absolute bottom-0 w-full z-40 pb-safe">
             <div class="flex justify-around items-center h-16">
                 <button onclick="switchTab('home')" class="nav-btn active flex flex-col items-center justify-center w-full h-full text-emerald-600 transition duration-300">
                     <i class="fas fa-home text-xl mb-1"></i><span class="text-[10px] font-medium">Günlük</span>
@@ -388,8 +477,8 @@
             {id:89,name:"Fecr",page:592},{id:90,name:"Beled",page:593},{id:91,name:"Şems",page:594},{id:92,name:"Leyl",page:594},
             {id:93,name:"Duhâ",page:595},{id:94,name:"İnşirâh",page:595},{id:95,name:"Tîn",page:596},{id:96,name:"Alak",page:596},
             {id:97,name:"Kadir",page:597},{id:98,name:"Beyyine",page:597},{id:99,name:"Zilzâl",page:598},{id:100,name:"Âdiyât",page:598},
-            {id:101,name:"Kâria",page:599},{id:102,name:"Tekâsür",page:599},{id:103,name:"Asr",page:601},{id:104,name:"Hümeze",page:601},
-            {id:105,name:"Fîl",page:601},{id:106,name:"Kureyş",page:601},{id:107,name:"Mâûn",page:601},{id:108,name:"Kevser",page:601},
+            {id:101,name:"Kâria",page:599},{id:102,name:"Tekâsür",page:599},{id:103,name:"Asr",page:600},{id:104,name:"Hümeze",page:600},
+            {id:105,name:"Fîl",page:600},{id:106,name:"Kureyş",page:601},{id:107,name:"Mâûn",page:601},{id:108,name:"Kevser",page:601},
             {id:109,name:"Kâfirûn",page:602},{id:110,name:"Nasr",page:602},{id:111,name:"Tebbet",page:602},{id:112,name:"İhlâs",page:604},
             {id:113,name:"Felâk",page:604},{id:114,name:"Nâs",page:604}
         ];
@@ -425,33 +514,31 @@
             updateDate(); loadTasks(); loadDhikrState(); initZikirGestures(); populateDhikrList(); loadHatimList();
             fetchPage(0);
             
-            // --- SWIPE EVENT LISTENERS ---
-            const display = document.getElementById('quran-display');
-            let touchStartX = 0;
-            let touchEndX = 0;
-
-            display.addEventListener('touchstart', e => {
-                touchStartX = e.changedTouches[0].screenX;
-            }, {passive: true});
-
-            display.addEventListener('touchend', e => {
-                touchEndX = e.changedTouches[0].screenX;
-                handleSwipe();
-            }, {passive: true});
-
-            function handleSwipe() {
-                // Eğer auto-scroll açıksa swipe'ı engelleme (kullanıcı tercihine göre değişebilir ama genelde açıkken de istenir)
-                // Ancak çok küçük hareketleri algılamamak için threshold koyalım
-                if (Math.abs(touchEndX - touchStartX) < 50) return; // 50px altı hareketleri yoksay
-
-                if (touchEndX < touchStartX) {
-                    // Sola Kaydır -> İleri Git
-                    changePage(1);
-                } else if (touchEndX > touchStartX) {
-                    // Sağa Kaydır -> Geri Git
-                    changePage(-1);
+            // SWIPE EVENT - NORMAL & OKUMA MODU (HASSASİYET AYARLI)
+            function addSwipeTo(element) {
+                let touchStartX = 0, touchEndX = 0, touchStartY = 0, touchEndY = 0;
+                element.addEventListener('touchstart', e => { 
+                    touchStartX = e.changedTouches[0].screenX; 
+                    touchStartY = e.changedTouches[0].screenY;
+                }, {passive: true});
+                element.addEventListener('touchend', e => { 
+                    touchEndX = e.changedTouches[0].screenX; 
+                    touchEndY = e.changedTouches[0].screenY;
+                    handleSwipe(); 
+                }, {passive: true});
+                
+                function handleSwipe() {
+                    const diffX = touchEndX - touchStartX;
+                    const diffY = touchEndY - touchStartY;
+                    // Hassasiyet: Sadece yatay hareket (X) dikeyden (Y) büyükse ve en az 60px ise
+                    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
+                        if (diffX < 0) changePage(1); // Sola kaydır -> İleri
+                        else changePage(-1); // Sağa kaydır -> Geri
+                    }
                 }
             }
+            addSwipeTo(document.getElementById('quran-display'));
+            addSwipeTo(document.getElementById('reading-display'));
         });
 
         function normalizeTr(text) { return text.toLocaleLowerCase('tr').replace(/â/g, 'a').replace(/î/g, 'i').replace(/û/g, 'u'); }
@@ -471,8 +558,20 @@
             }
             if (page === 604) { activeSurah = "Nâs"; activeJuz = 30; }
 
-            document.getElementById('current-juz-info').textContent = `${activeJuz}. Cüz`;
-            document.getElementById('current-surah-info').textContent = `${activeSurah}`;
+            // Normal Mod Güncelleme
+            const juzEl = document.getElementById('current-juz-info');
+            const surahEl = document.getElementById('current-surah-info');
+            if(juzEl) juzEl.textContent = `${activeJuz}. Cüz`;
+            if(surahEl) surahEl.textContent = `${activeSurah}`;
+            
+            // Okuma Modu Güncelleme
+            const rPage = document.getElementById('reading-page-info');
+            const rSurah = document.getElementById('reading-surah-info');
+            const rJuz = document.getElementById('reading-juz-info');
+            
+            if(rPage) rPage.textContent = `${page}`;
+            if(rSurah) rSurah.textContent = `${activeSurah}`;
+            if(rJuz) rJuz.textContent = `${activeJuz}. Cüz`;
         }
 
         function handleSearchInput(value) {
@@ -517,8 +616,27 @@
             const img = document.getElementById('quran-page-image');
             loader.classList.remove('hidden');
             translationDataCache = null; closeTranslation(); 
-            img.onload = () => { loader.classList.add('hidden'); document.getElementById('quran-display').scrollTop = 0; };
-            img.src = `https://surahquran.com/img/pages-quran/mushaf/s${pageNumber}.png`;
+            
+            const src = `https://surahquran.com/img/pages-quran/mushaf/s${pageNumber}.png`;
+            img.src = src;
+            
+            // Okuma modu için görseli güncelle
+            const readingContainer = document.getElementById('reading-display');
+            readingContainer.innerHTML = '';
+            const newImg = document.createElement('img');
+            newImg.src = src;
+            newImg.style.width = '100%';
+            newImg.style.display = 'block';
+            newImg.id = "reading-image"; // ID verelim
+            newImg.onload = () => {
+                loader.classList.add('hidden');
+                document.getElementById('quran-display').scrollTop = 0;
+                if (!isAutoScrolling) readingContainer.scrollTop = 0;
+            };
+            readingContainer.appendChild(newImg);
+            const spacer = document.createElement('div');
+            spacer.style.height = '100px';
+            readingContainer.appendChild(spacer);
         }
         function changePage(delta) { fetchPage(currentQuranPage + delta); }
 
@@ -526,30 +644,38 @@
         function toggleAutoScroll() {
             const defaultTools = document.getElementById('default-tools');
             const scrollTools = document.getElementById('scroll-tools');
-            const landPlay = document.getElementById('land-play-btn');
+            const landPlay = document.getElementById('reading-play-btn');
+            const landPlay2 = document.getElementById('land-play-btn');
+            const btnIcon = document.querySelector('#btn-autoscroll i');
             
             if(isAutoScrolling) {
                 // DURDUR
                 isAutoScrolling = false;
                 if(animationFrameId) cancelAnimationFrame(animationFrameId);
-                // Class-based switching
+                
                 scrollTools.classList.add('hidden-force');
                 scrollTools.classList.remove('flex-force');
                 defaultTools.classList.remove('hidden-force');
                 defaultTools.classList.add('flex-force');
                 
                 if(landPlay) landPlay.innerHTML = '<i class="fas fa-play"></i>';
+                if(landPlay2) landPlay2.innerHTML = '<i class="fas fa-play"></i>';
+                if(btnIcon) btnIcon.className = 'fas fa-circle-play';
             } else {
                 // BAŞLAT
                 isAutoScrolling = true;
+                
                 defaultTools.classList.add('hidden-force');
                 defaultTools.classList.remove('flex-force');
                 scrollTools.classList.remove('hidden-force');
                 scrollTools.classList.add('flex-force');
                 
                 if(landPlay) landPlay.innerHTML = '<i class="fas fa-pause"></i>';
+                if(landPlay2) landPlay2.innerHTML = '<i class="fas fa-pause"></i>';
+                if(btnIcon) btnIcon.className = 'fas fa-pause-circle';
                 
-                const display = document.getElementById('quran-display');
+                // Hangi moddaysak oranın scroll pozisyonunu al
+                const display = document.body.classList.contains('reading-mode') ? document.getElementById('reading-display') : document.getElementById('quran-display');
                 scrollFloat = display.scrollTop; 
                 animateScroll();
             }
@@ -557,29 +683,47 @@
 
         function adjustScrollSpeed(delta) {
             let newSpeed = scrollSpeed + delta;
-            if(newSpeed < 1) newSpeed = 1;
-            if(newSpeed > 100) newSpeed = 100;
+            if(newSpeed < 1) newSpeed = 1; if(newSpeed > 100) newSpeed = 100;
             scrollSpeed = newSpeed;
             document.getElementById('speed-display').textContent = scrollSpeed;
+            if(document.getElementById('speed-display-reading')) document.getElementById('speed-display-reading').textContent = scrollSpeed;
             if(document.getElementById('speed-display-land')) document.getElementById('speed-display-land').textContent = scrollSpeed;
+        }
+        
+        // --- OKUMA MODU GEÇİŞLERİ ---
+        function toggleReadingMode() {
+            const body = document.body;
+            if (body.classList.contains('reading-mode')) {
+                // ÇIKIŞ
+                body.classList.remove('reading-mode');
+                if(document.exitFullscreen) document.exitFullscreen().catch(e=>console.log(e));
+                // Scroll senkronizasyonu
+                const readingScroll = document.getElementById('reading-display').scrollTop;
+                document.getElementById('quran-display').scrollTop = readingScroll;
+                scrollFloat = readingScroll; 
+            } else {
+                // GİRİŞ
+                body.classList.add('reading-mode');
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => console.log(err)); }
+                // Scroll senkronizasyonu
+                const normalScroll = document.getElementById('quran-display').scrollTop;
+                document.getElementById('reading-display').scrollTop = normalScroll;
+                scrollFloat = normalScroll; 
+            }
         }
         
         function toggleFullscreen() {
              if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch((e) => {
-                    console.log("Tam ekran hatası:", e);
-                    alert("Tarayıcınız tam ekranı desteklemiyor veya izin vermiyor.");
-                });
+                document.documentElement.requestFullscreen().catch((e) => { alert("Tarayıcınız tam ekranı desteklemiyor."); });
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+                if (document.exitFullscreen) { document.exitFullscreen(); }
             }
         }
 
         function animateScroll() {
             if(!isAutoScrolling) return;
-            const display = document.getElementById('quran-display');
+            const display = document.body.classList.contains('reading-mode') ? document.getElementById('reading-display') : document.getElementById('quran-display');
             const minSpeed = 0.05; const maxSpeed = 1.5;
             const step = minSpeed + ((scrollSpeed - 1) * (maxSpeed - minSpeed) / 99);
             scrollFloat += step;
