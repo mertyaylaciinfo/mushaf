@@ -2,376 +2,516 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giriş Yap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Üç Aylar Rehberi</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: none;
         }
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
+        /* Özel Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
+        
+        /* Tab Geçişleri */
+        .tab-content { display: none; height: 100%; }
+        .tab-content.active { display: flex; flex-direction: column; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* TESBİH */
+        .tesbih-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; display: flex; justify-content: center; background: radial-gradient(circle at center, #f8fafc 0%, #e2e8f0 100%); touch-action: none; }
+        .tesbih-string { position: absolute; top: -200px; bottom: -200px; width: 4px; background: #9ca3af; box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3); z-index: 0; left: 50%; transform: translateX(-50%); }
+        .bead-wrapper { position: absolute; left: 50%; top: 15%; transform: translateX(-50%); width: 100px; height: 500px; }
+        .bead { width: 70px; height: 60px; border-radius: 45%; position: absolute; left: 50%; margin-left: -35px; z-index: 10; background: radial-gradient(circle at 35% 35%, #f59e0b, #b45309); box-shadow: inset -3px -3px 10px rgba(0,0,0,0.4), inset 3px 3px 10px rgba(255,255,255,0.4), 0 5px 10px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; transition: transform 0.1s linear; pointer-events: none; }
+        .bead::after { content: ''; width: 10px; height: 5px; background: #451a03; border-radius: 50%; opacity: 0.7; box-shadow: inset 0 1px 2px rgba(0,0,0,0.8); }
+        .bead.active { z-index: 20; }
+        .page-badge { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
+        
+        /* BUTON STİLLERİ (Garantili Görünüm) */
+        .tool-btn {
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 9999px;
+            background-color: #ecfdf5; 
+            color: #059669; 
+            border: 1px solid #d1fae5; 
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            cursor: pointer;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .hidden-step {
-            display: none;
-        }
-        /* Loader */
-        .loader {
-            border: 3px solid #f3f3f3;
+        .tool-btn:hover { background-color: #d1fae5; color: #047857; transform: scale(1.05); }
+        .tool-btn:active { transform: scale(0.95); }
+        .tool-btn i { font-size: 1rem; }
+        
+        /* Speed Control Buttons */
+        .speed-btn {
+            width: 30px; height: 30px;
+            display: flex; align-items: center; justify-content: center;
             border-radius: 50%;
-            border-top: 3px solid #3498db;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
+            background-color: white;
+            color: #059669;
+            border: 1px solid #10b981;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.1s;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .speed-btn:active { transform: scale(0.9); background-color: #ecfdf5; }
+
+        /* Arama Önerileri */
+        #search-suggestions {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background-color: white; border: 1px solid #e5e7eb;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem;
+            z-index: 50; max-height: 15rem; overflow-y: auto; display: none;
         }
+        .suggestion-item { padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; border-bottom: 1px solid #f9fafb; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .suggestion-item:hover { background-color: #ecfdf5; }
+        
+        /* Yardımcı Sınıflar */
+        .hidden-force { display: none !important; }
+        .flex-force { display: flex !important; }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center p-4">
+<body class="text-gray-800 h-screen flex justify-center overflow-hidden bg-gray-100">
 
-    <!-- Ana Kart -->
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative">
+    <div class="w-full max-w-md h-full bg-white shadow-2xl relative flex flex-col overflow-hidden sm:rounded-xl sm:h-[95vh] sm:my-auto">
         
-        <!-- Üst Başlık Kısmı -->
-        <div class="bg-blue-600 p-6 text-center text-white">
-            <div class="mb-3">
-                <i class="fas fa-shield-alt text-4xl"></i>
+        <!-- Header -->
+        <header class="bg-emerald-600 text-white p-3 shadow-md z-20 shrink-0 flex justify-between items-center">
+            <div>
+                <h1 class="text-lg font-bold tracking-tight flex items-center gap-2">
+                    <i class="fas fa-moon text-yellow-300"></i> <span>Üç Aylar Rehberi</span>
+                </h1>
+                <p class="text-[10px] text-emerald-100 opacity-90" id="current-date">Yükleniyor...</p>
             </div>
-            <h2 class="text-2xl font-bold">Güvenli Giriş</h2>
-            <p class="text-blue-100 text-sm mt-1">Lütfen telefon numaranızı doğrulayın</p>
-        </div>
-
-        <div class="p-8">
-            <!-- Bildirim Alanı -->
-            <div id="notification-area" class="hidden mb-4 p-3 rounded text-sm font-medium text-center border"></div>
-
-            <!-- Adım 1: Telefon Numarası Girişi -->
-            <div id="step-phone" class="fade-in">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="phone">
-                    Telefon Numarası
-                </label>
-                <div class="relative mb-6">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-phone text-gray-400"></i>
-                    </div>
-                    <input type="tel" id="phone" 
-                        class="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                        placeholder="+90 5XX XXX XX XX"
-                        value="+90">
-                </div>
-
-                <!-- Recaptcha Container (Bu alan her seferinde temizlenecek) -->
-                <div id="recaptcha-container" class="mb-4 flex justify-center"></div>
-
-                <button onclick="sendOTP()" id="btn-send" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex justify-center items-center gap-2">
-                    <span>Doğrulama Kodu Gönder</span>
-                </button>
+            <div id="active-hatim-display" class="hidden-force text-xs bg-emerald-700/50 px-2 py-1 rounded-full border border-emerald-500/30 shadow-sm flex items-center gap-1">
+                <i class="fas fa-bookmark text-yellow-300 text-[10px]"></i> <span id="active-hatim-name" class="truncate max-w-[80px] font-medium"></span>
             </div>
+        </header>
 
-            <!-- Adım 2: OTP Girişi -->
-            <div id="step-otp" class="hidden-step fade-in">
-                <div class="text-center mb-6">
-                    <p class="text-gray-600 text-sm">
-                        <span id="display-phone" class="font-bold text-gray-800"></span> numarasına gönderilen 6 haneli kodu giriniz.
-                    </p>
-                    <button onclick="resetFlow()" class="text-blue-500 text-xs hover:underline mt-1">Numarayı Değiştir</button>
-                </div>
-
-                <div class="flex justify-between gap-2 mb-6" id="otp-inputs">
-                    <input type="text" id="otp-code" maxlength="6" 
-                        class="w-full text-center text-2xl tracking-widest py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                        placeholder="123456">
-                </div>
-
-                <button onclick="verifyOTP()" id="btn-verify" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex justify-center items-center gap-2">
-                    <span>Doğrula ve Giriş Yap</span>
-                </button>
-                
-                <div class="mt-4 text-center">
-                    <p class="text-xs text-gray-400">Kod gelmedi mi? <span class="text-blue-500 cursor-pointer hover:underline" onclick="resetRecaptchaAndResend()">Tekrar Gönder</span></p>
-                </div>
-            </div>
+        <!-- Main -->
+        <main class="flex-1 overflow-hidden bg-gray-50 relative">
             
-            <!-- Başarılı Giriş Ekranı -->
-            <div id="step-success" class="hidden-step fade-in text-center py-6">
-                <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-check text-3xl"></i>
+            <!-- GÜNLÜK TAB -->
+            <div id="tab-home" class="tab-content active overflow-y-auto p-4 space-y-4">
+                <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden shrink-0">
+                    <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
+                    <h2 class="font-bold text-lg mb-1">Günün Ayeti</h2>
+                    <p class="text-sm italic opacity-95 leading-relaxed">"Ey iman edenler! Allah'a karşı gelmekten sakının ve doğrularla beraber olun." (Tevbe, 119)</p>
+                    <div class="mt-3 text-xs bg-white/20 inline-block px-2 py-1 rounded">Ramazan'a <span id="days-left" class="font-bold text-yellow-300">--</span> gün kaldı</div>
                 </div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Giriş Başarılı!</h3>
-                <p class="text-gray-600 mb-6">Yönlendiriliyorsunuz...</p>
-                <button onclick="window.location.reload()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-lg">
-                    Çıkış Yap
-                </button>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 shrink-0">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-700 flex items-center"><i class="fas fa-check-double text-emerald-500 mr-2"></i>Günlük Görevler</h3>
+                        <button onclick="resetTasks()" class="text-xs text-gray-400 hover:text-red-500">Sıfırla</button>
+                    </div>
+                    <div id="task-list" class="space-y-3"></div>
+                </div>
             </div>
 
+            <!-- KURAN TAB -->
+            <div id="tab-quran" class="tab-content flex-col h-full bg-white relative">
+                
+                <div class="sticky top-0 bg-white/95 backdrop-blur z-30 shadow-sm border-b border-emerald-50 pb-2 flex flex-col">
+                    <!-- Arama -->
+                    <div class="flex items-center px-3 py-2 gap-3 relative">
+                        <div class="relative flex-1">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+                            <input type="text" id="unified-search" oninput="handleSearchInput(this.value)" onfocus="handleSearchInput(this.value)" placeholder="Sure, Cüz, Sayfa..." class="w-full pl-8 pr-2 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm transition">
+                            <div id="search-suggestions"></div>
+                        </div>
+                        <div class="text-right flex flex-col justify-center min-w-[90px]">
+                            <span id="current-surah-info" class="text-sm font-bold text-emerald-800 leading-tight">Fâtiha</span>
+                            <span id="current-juz-info" class="text-[10px] text-gray-500 font-medium tracking-wide">1. Cüz</span>
+                        </div>
+                    </div>
+
+                    <!-- Butonlar & Navigasyon -->
+                    <div class="flex items-center justify-between px-3 gap-2 h-10 relative">
+                        <!-- Sayfa Değiştir -->
+                        <div class="flex items-center gap-1 bg-gray-50 p-0.5 rounded-xl border border-gray-100">
+                            <button onclick="changePage(-1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-gray-500 hover:text-emerald-600 shadow-sm"><i class="fas fa-chevron-left text-xs"></i></button>
+                            <span class="text-xs font-bold w-9 text-center text-gray-700 page-badge" id="page-num">0</span>
+                            <button onclick="changePage(1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-gray-500 hover:text-emerald-600 shadow-sm"><i class="fas fa-chevron-right text-xs"></i></button>
+                        </div>
+
+                        <!-- ARAÇLAR (Varsayılan) -->
+                        <div id="default-tools" class="flex items-center gap-2">
+                            <button onclick="saveHatimLocation()" class="tool-btn" title="Kaydet"><i class="fas fa-bookmark"></i></button>
+                            <button onclick="openModal('hatimListModal')" class="tool-btn" title="Hatimler"><i class="fas fa-layer-group"></i></button>
+                            <button onclick="toggleAutoScroll()" class="tool-btn" title="Oto Kaydır"><i class="fas fa-circle-play"></i></button>
+                            <button onclick="openTranslation()" class="tool-btn" title="Meal"><i class="fas fa-book-open"></i></button>
+                        </div>
+
+                        <!-- SCROLL KONTROL (Artı/Eksi Butonlu) -->
+                        <div id="scroll-tools" class="hidden-force flex items-center gap-2 bg-white flex-1 justify-end">
+                            <div class="flex items-center gap-2 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
+                                <button onclick="adjustScrollSpeed(-1)" class="speed-btn" title="Yavaşlat">-</button>
+                                <span id="speed-display" class="text-xs font-bold text-emerald-700 w-6 text-center">10</span>
+                                <button onclick="adjustScrollSpeed(1)" class="speed-btn" title="Hızlandır">+</button>
+                            </div>
+                            <button onclick="toggleAutoScroll()" class="w-9 h-9 flex items-center justify-center rounded-full bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition shadow-sm" title="Durdur">
+                                <i class="fas fa-stop text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Okuma Alanı -->
+                <div id="quran-display" class="quran-container flex-1 overflow-y-auto bg-gray-50 pb-24 relative text-center">
+                    <div id="arabic-page" class="w-full min-h-full flex flex-col items-center justify-start py-2">
+                         <img id="quran-page-image" src="" alt="Kuran Sayfası" class="max-w-full w-auto h-auto shadow-sm rounded-sm" style="max-height: 100%;">
+                    </div>
+                </div>
+
+                <!-- Meal Alanı -->
+                <div id="translation-overlay" class="hidden absolute inset-0 top-[110px] bg-white z-40 flex flex-col animate-fadeIn shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-t-3xl border-t border-emerald-100">
+                     <div class="bg-emerald-50/80 backdrop-blur p-4 flex justify-between items-center border-b border-emerald-100 rounded-t-3xl">
+                        <h3 class="font-bold text-emerald-800 text-sm flex items-center gap-2"><i class="fas fa-language"></i> Sayfa <span id="trans-page-num">0</span> Meali</h3>
+                        <button onclick="closeTranslation()" class="w-8 h-8 flex items-center justify-center bg-white rounded-full text-emerald-600 hover:text-red-500 hover:bg-red-50 transition shadow-sm"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div id="translation-content" class="flex-1 overflow-y-auto p-5 space-y-4 pb-24 text-sm leading-relaxed text-gray-700"></div>
+                </div>
+                
+                <div id="quran-loader" class="hidden absolute inset-0 top-[110px] bg-white/95 flex flex-col items-center justify-center z-50">
+                    <i class="fas fa-circle-notch fa-spin text-emerald-600 text-3xl"></i>
+                    <p class="text-sm text-gray-500 mt-3 font-medium">Sayfa Yükleniyor...</p>
+                </div>
+            </div>
+
+            <!-- ZİKİR TAB -->
+            <div id="tab-zikir" class="tab-content h-full relative overflow-hidden bg-slate-50 select-none">
+                <div class="absolute top-0 left-0 right-0 p-8 z-30 text-center pointer-events-none">
+                    <h3 id="current-dhikr-name" class="text-2xl font-bold text-emerald-800 drop-shadow-sm">Subhanallah</h3>
+                    <div class="mt-4 inline-block bg-white/90 backdrop-blur px-8 py-2 rounded-2xl shadow-sm border border-emerald-100">
+                        <span id="counter-display" class="text-6xl font-bold text-emerald-600 font-mono">0</span>
+                    </div>
+                </div>
+                <div class="tesbih-container" id="touch-area">
+                    <div class="tesbih-string"></div>
+                    <div id="bead-chain" class="bead-wrapper">
+                        <div class="bead" style="top: 0px;"></div><div class="bead" style="top: 55px;"></div>
+                        <div class="bead active" id="active-bead" style="top: 110px;"></div>
+                        <div class="bead" style="top: 280px;"></div><div class="bead" style="top: 335px;"></div>
+                    </div>
+                </div>
+                <div class="absolute bottom-24 left-0 right-0 text-center text-gray-400 text-xs animate-pulse pointer-events-none z-20">
+                    <i class="fas fa-hand-pointer mb-1"></i><br>Ekranda herhangi bir yerden<br>aşağı doğru çekin
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 flex gap-3 z-30">
+                    <button onclick="resetDhikr()" class="p-3 text-gray-400 hover:text-red-500 transition rounded-lg border border-gray-100"><i class="fas fa-sync-alt"></i></button>
+                    <button onclick="toggleDhikrList()" class="flex-1 bg-emerald-600 text-white rounded-lg font-medium shadow hover:bg-emerald-700 transition py-3">Zikir Değiştir</button>
+                </div>
+                <div id="dhikr-selection" class="hidden absolute inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+                     <div class="bg-white w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[70%]">
+                         <div class="flex justify-between items-center p-4 border-b bg-gray-50">
+                            <h3 class="font-bold text-gray-700">Zikir Seçimi</h3>
+                            <button onclick="toggleDhikrList()" class="text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="overflow-y-auto p-2 space-y-1" id="dhikr-options"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navbar -->
+        <nav id="main-nav" class="bg-white border-t border-gray-200 absolute bottom-0 w-full pb-safe z-40">
+            <div class="flex justify-around items-center h-16">
+                <button onclick="switchTab('home')" class="nav-btn active flex flex-col items-center justify-center w-full h-full text-emerald-600 transition duration-300">
+                    <i class="fas fa-home text-xl mb-1"></i><span class="text-[10px] font-medium">Günlük</span>
+                </button>
+                <button onclick="switchTab('quran')" class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-emerald-500 transition duration-300">
+                    <i class="fas fa-quran text-xl mb-1"></i><span class="text-[10px] font-medium">Kuran</span>
+                </button>
+                <button onclick="switchTab('zikir')" class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-emerald-500 transition duration-300">
+                    <i class="fas fa-pray text-xl mb-1"></i><span class="text-[10px] font-medium">Zikir</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Hatim Modal -->
+        <div id="hatimListModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex justify-between items-center">
+                    Hatimlerim 
+                    <button onclick="closeModal('hatimListModal')" class="text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                </h3>
+                <div id="hatim-list-container" class="space-y-2 mb-4 max-h-60 overflow-y-auto"></div>
+                <div class="flex gap-2">
+                    <input type="text" id="new-hatim-name" placeholder="Yeni hatim ismi..." class="flex-1 p-2 border rounded-lg text-sm outline-none focus:border-emerald-500">
+                    <button onclick="createNewHatim()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-emerald-700">Ekle</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
     <script>
-        // ==========================================
-        // CONFIG BÖLÜMÜ
-        // ==========================================
-        // NOT: Buradaki bilgileri kendi Firebase projenizden aldığınız
-        // güncel bilgilerle değiştirdiğinizden emin olun.
-        const firebaseConfig = {
-            apiKey: "AIzaSyDWhGyTxXYHS77mG0C1HwVImOOZBmHWKeI",
-            authDomain: "smsdogrulama.firebaseapp.com",
-            projectId: "smsdogrulama",
-            storageBucket: "smsdogrulama.firebasestorage.app",
-            messagingSenderId: "394188723036",
-            appId: "1:394188723036:web:b4708c8c688aa347c1e799"
-        };
+        // --- AYARLAR ---
+        const tasks = [
+            { id: 1, text: "5 Vakit Namaz", icon: "fa-mosque" },
+            { id: 2, text: "Kuran-ı Kerim Okumak", icon: "fa-book-open" },
+            { id: 3, text: "Günün Zikri (100 defa)", icon: "fa-fingerprint" },
+            { id: 4, text: "Sadaka / İyilik Yapmak", icon: "fa-hand-holding-heart" },
+            { id: 5, text: "Tövbe İstiğfar", icon: "fa-hands-praying" }
+        ];
 
-        // Simülasyon modu (Hata durumunda açılır)
-        let isSimulationMode = false;
+        // Sayfa Yapısı: s{X}.png = Sayfa X
+        const surahList = [
+            {id:1,name:"Fâtiha",page:0},{id:2,name:"Bakara",page:1},{id:3,name:"Âl-i İmrân",page:49},{id:4,name:"Nisâ",page:76},
+            {id:5,name:"Mâide",page:105},{id:6,name:"En'âm",page:127},{id:7,name:"A'râf",page:150},{id:8,name:"Enfâl",page:176},
+            {id:9,name:"Tevbe",page:186},{id:10,name:"Yûnus",page:207},{id:11,name:"Hûd",page:220},{id:12,name:"Yûsuf",page:234},
+            {id:13,name:"Ra'd",page:248},{id:14,name:"İbrahim",page:254},{id:15,name:"Hicr",page:261},{id:16,name:"Nahl",page:266},
+            {id:17,name:"İsrâ",page:281},{id:18,name:"Kehf",page:292},{id:19,name:"Meryem",page:304},{id:20,name:"Tâhâ",page:311},
+            {id:21,name:"Enbiyâ",page:321},{id:22,name:"Hac",page:331},{id:23,name:"Mü'minûn",page:341},{id:24,name:"Nûr",page:349},
+            {id:25,name:"Furkan",page:358},{id:26,name:"Şuarâ",page:366},{id:27,name:"Neml",page:376},{id:28,name:"Kasas",page:384},
+            {id:29,name:"Ankebût",page:395},{id:30,name:"Rûm",page:403},{id:31,name:"Lokmân",page:410},{id:32,name:"Secde",page:414},
+            {id:33,name:"Ahzâb",page:417},{id:34,name:"Sebe'",page:427},{id:35,name:"Fâtır",page:433},{id:36,name:"Yâsîn",page:439},
+            {id:37,name:"Sâffât",page:445},{id:38,name:"Sâd",page:452},{id:39,name:"Zümer",page:457},{id:40,name:"Mü'min",page:466},
+            {id:41,name:"Fussilet",page:476},{id:42,name:"Şûrâ",page:482},{id:43,name:"Zuhruf",page:488},{id:44,name:"Duhân",page:495},
+            {id:45,name:"Câsiye",page:498},{id:46,name:"Ahkâf",page:501},{id:47,name:"Muhammed",page:506},{id:48,name:"Fetih",page:510},
+            {id:49,name:"Hucurât",page:514},{id:50,name:"Kâf",page:517},{id:51,name:"Zâriyât",page:519},{id:52,name:"Tûr",page:522},
+            {id:53,name:"Necm",page:525},{id:54,name:"Kamer",page:527},{id:55,name:"Rahmân",page:530},{id:56,name:"Vâkıa",page:533},
+            {id:57,name:"Hadîd",page:536},{id:58,name:"Mücâdele",page:541},{id:59,name:"Haşr",page:544},{id:60,name:"Mümtehine",page:548},
+            {id:61,name:"Saff",page:550},{id:62,name:"Cuma",page:552},{id:63,name:"Münâfikûn",page:553},{id:64,name:"Teğâbün",page:555},
+            {id:65,name:"Talâk",page:557},{id:66,name:"Tahrîm",page:559},{id:67,name:"Mülk",page:561},{id:68,name:"Kalem",page:563},
+            {id:69,name:"Hâkka",page:565},{id:70,name:"Meâric",page:567},{id:71,name:"Nûh",page:569},{id:72,name:"Cin",page:571},
+            {id:73,name:"Müzzemmil",page:573},{id:74,name:"Müddessir",page:574},{id:75,name:"Kıyâme",page:576},{id:76,name:"İnsân",page:577},
+            {id:77,name:"Mürselât",page:579},{id:78,name:"Nebe'",page:581},{id:79,name:"Nâziât",page:582},{id:80,name:"Abese",page:584},
+            {id:81,name:"Tekvîr",page:585},{id:82,name:"İnfitâr",page:586},{id:83,name:"Mutaffifîn",page:586},{id:84,name:"İnşikâk",page:588},
+            {id:85,name:"Burûc",page:589},{id:86,name:"Târık",page:590},{id:87,name:"A'lâ",page:590},{id:88,name:"Gâşiye",page:591},
+            {id:89,name:"Fecr",page:592},{id:90,name:"Beled",page:593},{id:91,name:"Şems",page:594},{id:92,name:"Leyl",page:594},
+            {id:93,name:"Duhâ",page:595},{id:94,name:"İnşirâh",page:595},{id:95,name:"Tîn",page:596},{id:96,name:"Alak",page:596},
+            {id:97,name:"Kadir",page:597},{id:98,name:"Beyyine",page:597},{id:99,name:"Zilzâl",page:598},{id:100,name:"Âdiyât",page:598},
+            {id:101,name:"Kâria",page:599},{id:102,name:"Tekâsür",page:599},{id:103,name:"Asr",page:601},{id:104,name:"Hümeze",page:601},
+            {id:105,name:"Fîl",page:601},{id:106,name:"Kureyş",page:602},{id:107,name:"Mâûn",page:602},{id:108,name:"Kevser",page:602},
+            {id:109,name:"Kâfirûn",page:602},{id:110,name:"Nasr",page:602},{id:111,name:"Tebbet",page:602},{id:112,name:"İhlâs",page:604},
+            {id:113,name:"Felâk",page:604},{id:114,name:"Nâs",page:604}
+        ];
 
-        let confirmationResult = null;
-        let app, auth;
+        const juzList = [
+            {id:1,page:0}, {id:2,page:21}, {id:3,page:41}, {id:4,page:61}, {id:5,page:81}, 
+            {id:6,page:101}, {id:7,page:121}, {id:8,page:141}, {id:9,page:161}, {id:10,page:181},
+            {id:11,page:201}, {id:12,page:221}, {id:13,page:241}, {id:14,page:261}, {id:15,page:281},
+            {id:16,page:301}, {id:17,page:321}, {id:18,page:341}, {id:19,page:361}, {id:20,page:381},
+            {id:21,page:401}, {id:22,page:421}, {id:23,page:441}, {id:24,page:461}, {id:25,page:481},
+            {id:26,page:501}, {id:27,page:521}, {id:28,page:541}, {id:29,page:561}, {id:30,page:581}
+        ];
 
-        // Firebase Başlatma
-        try {
-            app = firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            auth.languageCode = 'tr'; 
-        } catch (e) {
-            console.error("Firebase init error:", e);
+        let dhikrCount = 0;
+        let currentDhikr = "Subhanallah";
+        let currentQuranPage = 0; 
+        const totalPages = 604;
+        let hatimList = [];
+        let activeHatimId = null;
+        let isAutoScrolling = false;
+        let scrollSpeed = 10; 
+        let scrollFloat = 0;
+        let animationFrameId = null;
+        let translationDataCache = null;
+
+        const beadClickSound = new Audio("data:audio/wav;base64,UklGRi4AAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAACAAEA/v///w==");
+        function playBeadSound() {
+            if (!beadClickSound.paused) { beadClickSound.pause(); beadClickSound.currentTime = 0; }
+            beadClickSound.play().catch(e => console.log(e));
         }
 
-        // ============================================================
-        // HATA DÜZELTMESİ: Recaptcha Temizleme ve Kurma
-        // ============================================================
-        function setupRecaptcha() {
-            if (isSimulationMode) return; 
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDate(); loadTasks(); loadDhikrState(); initZikirGestures(); populateDhikrList(); loadHatimList();
+            fetchPage(0);
+        });
 
-            // 1. ADIM: Varsa eski Recaptcha'yı temizle
-            if (window.recaptchaVerifier) {
-                try {
-                    window.recaptchaVerifier.clear();
-                } catch(e) {
-                    // Hata olursa görmezden gel, devam et
-                    console.log("Recaptcha temizleme uyarısı:", e);
-                }
-                window.recaptchaVerifier = null;
+        function normalizeTr(text) { return text.toLocaleLowerCase('tr').replace(/â/g, 'a').replace(/î/g, 'i').replace(/û/g, 'u'); }
+
+        function updateHeaderInfo(page) {
+            let activeJuz = 30;
+            for (let i = 0; i < juzList.length; i++) {
+                if (page < juzList[i].page) { activeJuz = i; break; }
+                if (i === juzList.length - 1) activeJuz = 30; 
+            }
+            if(activeJuz === 0) activeJuz = 1;
+
+            let activeSurah = "Fâtiha";
+            for (let i = 0; i < surahList.length; i++) {
+                if (surahList[i].page > page) { activeSurah = surahList[i-1] ? surahList[i-1].name : "Fâtiha"; break; }
+                if (i === surahList.length - 1) activeSurah = surahList[i].name;
+            }
+            if (page === 604) { activeSurah = "Nâs"; activeJuz = 30; }
+
+            document.getElementById('current-juz-info').textContent = `${activeJuz}. Cüz`;
+            document.getElementById('current-surah-info').textContent = `${activeSurah}`;
+        }
+
+        function handleSearchInput(value) {
+            const suggestionsBox = document.getElementById('search-suggestions');
+            const query = normalizeTr(value.trim());
+            suggestionsBox.innerHTML = '';
+            
+            if (query.length < 2 && !Number(query)) { suggestionsBox.classList.add('hidden'); return; }
+
+            let matches = [];
+            surahList.forEach(surah => { if (normalizeTr(surah.name).includes(query)) matches.push({ type: 'Sure', label: surah.name + ' Suresi', page: surah.page }); });
+            if (query.includes('cuz')) {
+                let num = parseInt(query.replace(/\D/g,''));
+                if(num >= 1 && num <= 30) matches.push({ type: 'Cüz', label: num + '. Cüz', page: juzList.find(j => j.id === num).page });
+            }
+            if (!isNaN(query)) {
+                let page = parseInt(query);
+                if (page >= 0 && page <= 604) matches.push({ type: 'Sayfa', label: 'Sayfa ' + page, page: page });
+                if (page >= 1 && page <= 30) matches.push({ type: 'Cüz', label: page + '. Cüz', page: juzList.find(j => j.id === page).page });
             }
 
-            // 2. ADIM: HTML kutusunun içini boşalt (Çok önemli!)
-            const container = document.getElementById('recaptcha-container');
-            if(container) container.innerHTML = '';
+            if (matches.length > 0) {
+                suggestionsBox.classList.remove('hidden');
+                matches.slice(0, 5).forEach(match => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerHTML = `<span>${match.label}</span> <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded">${match.type}</span>`;
+                    div.onclick = () => { fetchPage(match.page); suggestionsBox.classList.add('hidden'); document.getElementById('unified-search').value = ''; };
+                    suggestionsBox.appendChild(div);
+                });
+            } else { suggestionsBox.classList.add('hidden'); }
+        }
+        document.addEventListener('click', function(e) { if (!document.getElementById('unified-search').contains(e.target)) document.getElementById('search-suggestions').classList.add('hidden'); });
 
-            // 3. ADIM: Yeni Recaptcha oluştur
+        function fetchPage(pageNumber) {
+            if(pageNumber < 0) pageNumber = 0; if(pageNumber > totalPages) pageNumber = totalPages;
+            currentQuranPage = pageNumber; 
+            document.getElementById('page-num').textContent = pageNumber;
+            document.getElementById('trans-page-num').textContent = pageNumber;
+            updateHeaderInfo(pageNumber);
+            const loader = document.getElementById('quran-loader');
+            const img = document.getElementById('quran-page-image');
+            loader.classList.remove('hidden');
+            translationDataCache = null; closeTranslation(); 
+            img.onload = () => { loader.classList.add('hidden'); document.getElementById('quran-display').scrollTop = 0; };
+            img.src = `https://surahquran.com/img/pages-quran/mushaf/s${pageNumber}.png`;
+        }
+        function changePage(delta) { fetchPage(currentQuranPage + delta); }
+
+        // --- BUTON SWAP LOGIC (GARANTİLİ YÖNTEM) ---
+        function toggleAutoScroll() {
+            const defaultTools = document.getElementById('default-tools');
+            const scrollTools = document.getElementById('scroll-tools');
+            
+            if(isAutoScrolling) {
+                // DURDUR
+                isAutoScrolling = false;
+                if(animationFrameId) cancelAnimationFrame(animationFrameId);
+                // Class-based switching
+                scrollTools.classList.add('hidden-force');
+                scrollTools.classList.remove('flex-force');
+                defaultTools.classList.remove('hidden-force');
+                defaultTools.classList.add('flex-force');
+            } else {
+                // BAŞLAT
+                isAutoScrolling = true;
+                defaultTools.classList.add('hidden-force');
+                defaultTools.classList.remove('flex-force');
+                scrollTools.classList.remove('hidden-force');
+                scrollTools.classList.add('flex-force');
+                
+                const display = document.getElementById('quran-display');
+                scrollFloat = display.scrollTop; 
+                animateScroll();
+            }
+        }
+
+        function adjustScrollSpeed(delta) {
+            let newSpeed = scrollSpeed + delta;
+            if(newSpeed < 1) newSpeed = 1;
+            if(newSpeed > 100) newSpeed = 100;
+            scrollSpeed = newSpeed;
+            document.getElementById('speed-display').textContent = scrollSpeed;
+        }
+
+        function animateScroll() {
+            if(!isAutoScrolling) return;
+            const display = document.getElementById('quran-display');
+            const minSpeed = 0.05; const maxSpeed = 1.5;
+            const step = minSpeed + ((scrollSpeed - 1) * (maxSpeed - minSpeed) / 99);
+            scrollFloat += step;
+            display.scrollTop = scrollFloat;
+            if(display.scrollTop + display.clientHeight >= display.scrollHeight) { toggleAutoScroll(); return; }
+            animationFrameId = requestAnimationFrame(animateScroll);
+        }
+
+        async function openTranslation() {
+            const overlay = document.getElementById('translation-overlay');
+            const content = document.getElementById('translation-content');
+            overlay.classList.remove('hidden');
+            if(translationDataCache) return;
+            content.innerHTML = '<div class="text-center mt-10"><i class="fas fa-spinner fa-spin text-emerald-600"></i> Yükleniyor...</div>';
+            let apiPage = currentQuranPage + 1; if(apiPage > 604) apiPage = 604;
             try {
-                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                    'size': 'invisible',
-                    'callback': (response) => { console.log("Recaptcha doğrulandı"); },
-                    'expired-callback': () => {
-                         showNotification("Doğrulama zaman aşımı.", "error");
-                    }
-                });
-                // Render işlemini hemen başlatma, SMS gönderirken otomatik yapılacak
-            } catch(e) {
-                console.error("Recaptcha oluşturma hatası:", e);
-            }
-        }
-
-        // Sayfa yüklendiğinde bir kere çalıştır
-        window.onload = setupRecaptcha;
-
-        function switchToSimulation() {
-            isSimulationMode = true;
-            document.getElementById('recaptcha-container').innerHTML = ''; // Temizle
-            showNotification("Simülasyon Modu Aktif: Kod 123456", "success");
-            setTimeout(sendOTP, 1000);
-        }
-
-        // SMS Gönder
-        function sendOTP() {
-            const phoneNumber = document.getElementById('phone').value;
-            const btn = document.getElementById('btn-send');
-
-            if (phoneNumber.length < 10) {
-                showNotification("Lütfen geçerli bir telefon numarası girin.", "error");
-                return;
-            }
-
-            setLoading(btn, true, "Kod Gönderiliyor...");
-
-            // === SİMÜLASYON MODU ===
-            if (isSimulationMode) {
-                setTimeout(() => {
-                    setLoading(btn, false, "Doğrulama Kodu Gönder");
-                    showNotification("Simülasyon: Kod gönderildi (123456)", "success");
-                    goToStep('step-otp');
-                    document.getElementById('display-phone').innerText = phoneNumber;
-                }, 1500);
-                return;
-            }
-
-            // === GERÇEK MOD ===
-            // Her gönderimden önce recaptcha'yı güvenli hale getir
-            if (!window.recaptchaVerifier) setupRecaptcha();
-            
-            const appVerifier = window.recaptchaVerifier;
-
-            auth.signInWithPhoneNumber(phoneNumber, appVerifier)
-                .then((result) => {
-                    confirmationResult = result;
-                    setLoading(btn, false, "Doğrulama Kodu Gönder");
-                    showNotification("Doğrulama kodu gönderildi!", "success");
-                    goToStep('step-otp');
-                    document.getElementById('display-phone').innerText = phoneNumber;
-                }).catch((error) => {
-                    setLoading(btn, false, "Doğrulama Kodu Gönder");
-                    console.error("SMS Hatası:", error);
-                    
-                    // --- HATA YÖNETİMİ ---
-                    if (error.code === 'auth/billing-not-enabled') {
-                        showErrorWithAction(
-                            "Paket Henüz Aktif Değil veya Yanlış Proje",
-                            "Ödemeniz henüz yansımamış veya kodunuzdaki Config bilgileri eski. Test için simülasyonu kullanabilirsiniz.",
-                            "Simülasyon ile Devam Et",
-                            switchToSimulation
-                        );
-                        return;
-                    } 
-                    else if (error.code === 'auth/internal-error') {
-                        showErrorWithAction(
-                            "Domain Hatası",
-                            "Firebase güvenlik nedeniyle reddetti. Test moduna geçebilirsiniz.",
-                            "Simülasyon ile Devam Et",
-                            switchToSimulation
-                        );
-                        return;
-                    }
-                    else if(error.code === 'auth/invalid-phone-number') {
-                        showNotification("Telefon numarası formatı geçersiz.", "error");
-                    } else if(error.code === 'auth/too-many-requests') {
-                        showNotification("Çok fazla deneme yaptınız.", "error");
-                    } else {
-                        showNotification("Hata: " + error.message, "error");
-                    }
-
-                    // Hata durumunda Recaptcha'yı temizle ki sonraki denemede çakışmasın
-                    setupRecaptcha();
-                });
-        }
-
-        // Kodu Doğrula
-        function verifyOTP() {
-            const code = document.getElementById('otp-code').value;
-            const btn = document.getElementById('btn-verify');
-
-            if (code.length !== 6) {
-                showNotification("Lütfen 6 haneli kodu eksiksiz girin.", "error");
-                return;
-            }
-
-            setLoading(btn, true, "Doğrulanıyor...");
-
-            // Simülasyon Kontrolü
-            if (isSimulationMode) {
-                 setTimeout(() => {
-                    setLoading(btn, false, "Doğrula ve Giriş Yap");
-                    if (code === "123456") {
-                        goToStep('step-success');
-                    } else {
-                        showNotification("Hatalı kod! (Test kodu: 123456)", "error");
-                    }
-                }, 1000);
-                return;
-            }
-
-            // Gerçek Kontrol
-            if (!confirmationResult) {
-                showNotification("Oturum süresi doldu.", "error");
-                setLoading(btn, false, "Doğrula ve Giriş Yap");
-                return;
-            }
-
-            confirmationResult.confirm(code).then((result) => {
-                const user = result.user;
-                console.log("Başarılı Giriş:", user);
-                setLoading(btn, false, "Doğrula ve Giriş Yap");
-                goToStep('step-success');
-            }).catch((error) => {
-                setLoading(btn, false, "Doğrula ve Giriş Yap");
-                showNotification("Hatalı kod, lütfen tekrar deneyin.", "error");
-            });
-        }
-
-        function resetRecaptchaAndResend() {
-            setupRecaptcha(); // Temizle ve yeniden kur
-            sendOTP();
-        }
-
-        function goToStep(stepId) {
-            document.querySelectorAll('.fade-in').forEach(el => {
-                if (!el.classList.contains('hidden-step') && el.id.startsWith('step-')) {
-                    el.classList.add('hidden-step');
+                const response = await fetch(`https://api.alquran.cloud/v1/page/${apiPage}/tr.diyanet`);
+                const data = await response.json();
+                if(data.code === 200) {
+                    translationDataCache = data.data.ayahs;
+                    let html = "";
+                    data.data.ayahs.forEach(ayah => { html += `<div class="mb-4 pb-2 border-b border-gray-100 last:border-0"><span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full mb-1 inline-block">${ayah.surah.englishName} : ${ayah.numberInSurah}</span><p>${ayah.text}</p></div>`; });
+                    content.innerHTML = html;
                 }
-            });
-            document.getElementById(stepId).classList.remove('hidden-step');
+            } catch(e) { content.innerHTML = "Meal yüklenemedi."; }
         }
+        function closeTranslation() { document.getElementById('translation-overlay').classList.add('hidden'); }
 
-        function resetFlow() {
-            document.getElementById('otp-code').value = '';
-            goToStep('step-phone');
+        // --- DİĞER FONKSİYONLAR (Aynen korundu) ---
+        function loadDhikrState() {
+            dhikrCount = parseInt(localStorage.getItem('dhikrCount')) || 0;
+            currentDhikr = localStorage.getItem('currentDhikr') || "Subhanallah";
+            document.getElementById('counter-display').textContent = dhikrCount;
+            document.getElementById('current-dhikr-name').textContent = currentDhikr;
         }
-
-        function showNotification(message, type) {
-            const el = document.getElementById('notification-area');
-            el.innerHTML = message;
-            el.className = 'mb-4 p-3 rounded text-sm font-medium text-center border';
-            
-            if (type === 'error') {
-                el.classList.add('bg-red-100', 'text-red-700', 'border-red-200');
-            } else {
-                el.classList.add('bg-green-100', 'text-green-700', 'border-green-200');
-            }
-            el.classList.remove('hidden');
+        function initZikirGestures() {
+            const touchArea = document.getElementById('touch-area');
+            const activeBead = document.getElementById('active-bead');
+            let startY = 0; let isDragging = false; const pullThreshold = 80;
+            const handleStart = (y) => { isDragging = true; startY = y; activeBead.style.transition = 'none'; };
+            const handleMove = (y) => { if (!isDragging) return; const delta = y - startY; if (delta > 0) { let newTop = 110 + delta; if (newTop > 330) newTop = 330; activeBead.style.top = `${newTop}px`; } };
+            const handleEnd = (y) => { isDragging = false; const delta = y - startY; activeBead.style.transition = 'top 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; if (delta > pullThreshold) { activeBead.style.top = `280px`; playBeadSound(); dhikrCount++; document.getElementById('counter-display').textContent = dhikrCount; localStorage.setItem('dhikrCount', dhikrCount); if (navigator.vibrate) navigator.vibrate(20); setTimeout(() => { activeBead.style.transition = 'none'; activeBead.style.opacity = '0'; activeBead.style.top = `110px`; setTimeout(() => { activeBead.style.transition = 'opacity 0.2s ease-in'; activeBead.style.opacity = '1'; }, 50); }, 200); } else { activeBead.style.top = `110px`; } };
+            touchArea.addEventListener('touchstart', e => { handleStart(e.touches[0].clientY); }, {passive: false});
+            touchArea.addEventListener('touchmove', e => { if(isDragging) { e.preventDefault(); handleMove(e.touches[0].clientY); } }, {passive: false});
+            touchArea.addEventListener('touchend', e => { if(isDragging) handleEnd(e.changedTouches[0].clientY); });
+            touchArea.addEventListener('mousedown', e => { e.preventDefault(); handleStart(e.clientY); });
+            window.addEventListener('mousemove', e => handleMove(e.clientY));
+            window.addEventListener('mouseup', e => { if(isDragging) handleEnd(e.clientY); });
         }
-
-        function showErrorWithAction(title, desc, btnText, callback) {
-            const el = document.getElementById('notification-area');
-            el.className = 'mb-4 p-4 rounded text-sm text-left border bg-red-50 border-red-200 text-red-800';
-            
-            el.innerHTML = `
-                <div class="font-bold mb-1"><i class="fas fa-exclamation-circle"></i> ${title}</div>
-                <div class="mb-3 text-xs opacity-90">${desc}</div>
-                <button id="action-btn" class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 text-xs font-bold transition w-full">
-                    ${btnText}
-                </button>
-            `;
-            el.classList.remove('hidden');
-            document.getElementById('action-btn').onclick = callback;
-        }
-
-        function setLoading(btnElement, isLoading, text) {
-            if (isLoading) {
-                btnElement.disabled = true;
-                btnElement.classList.add('opacity-75', 'cursor-not-allowed');
-                btnElement.innerHTML = `<div class="loader mr-2"></div> İşlem yapılıyor...`;
-            } else {
-                btnElement.disabled = false;
-                btnElement.classList.remove('opacity-75', 'cursor-not-allowed');
-                btnElement.innerHTML = `<span>${text}</span>`;
-            }
-        }
+        function populateDhikrList() { const list = ["Subhanallah", "Elhamdülillah", "Allahuekber", "La ilahe illallah", "Estağfirullah", "Allah", "Salavat-ı Şerife"]; const container = document.getElementById('dhikr-options'); list.forEach(name => { container.innerHTML += `<button onclick="selectDhikr('${name}')" class="w-full text-left p-4 rounded-xl hover:bg-emerald-50 border border-transparent hover:border-emerald-100 transition flex justify-between items-center">${name}</button>`; }); }
+        function resetDhikr() { if(confirm('Sıfırla?')) { dhikrCount=0; localStorage.setItem('dhikrCount',0); document.getElementById('counter-display').textContent=0; } }
+        function toggleDhikrList() { document.getElementById('dhikr-selection').classList.toggle('hidden'); }
+        function selectDhikr(name) { currentDhikr = name; dhikrCount = 0; document.getElementById('current-dhikr-name').textContent = name; document.getElementById('counter-display').textContent = 0; localStorage.setItem('currentDhikr', name); localStorage.setItem('dhikrCount', 0); toggleDhikrList(); }
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function switchTab(tabId) { document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active'); document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('text-emerald-600'); btn.classList.add('text-gray-400'); }); event.currentTarget.classList.remove('text-gray-400'); event.currentTarget.classList.add('text-emerald-600'); }
+        function updateDate() { const date = new Date(); document.getElementById('current-date').textContent = date.toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); const today = new Date(); const ramadan = new Date(today.getFullYear(), 2, 1); if(today > ramadan) ramadan.setFullYear(today.getFullYear() + 1); const diffDays = Math.ceil(Math.abs(ramadan - today) / (1000 * 60 * 60 * 24)); document.getElementById('days-left').textContent = diffDays; }
+        function loadTasks() { const container = document.getElementById('task-list'); const todayKey = `tasks_${new Date().toLocaleDateString()}`; const savedData = JSON.parse(localStorage.getItem(todayKey)) || {}; container.innerHTML = ''; tasks.forEach(task => { const isChecked = savedData[task.id] ? 'checked' : ''; container.innerHTML += `<label class="flex items-center p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition cursor-pointer select-none"><input type="checkbox" onchange="saveTask(${task.id})" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 border-gray-300" ${isChecked}><div class="ml-3 flex-1"><span class="text-sm font-medium text-gray-700 block">${task.text}</span></div><i class="fas ${task.icon} text-emerald-200"></i></label>`; }); }
+        function saveTask(id) { const todayKey = `tasks_${new Date().toLocaleDateString()}`; const savedData = JSON.parse(localStorage.getItem(todayKey)) || {}; if (savedData[id]) delete savedData[id]; else savedData[id] = true; localStorage.setItem(todayKey, JSON.stringify(savedData)); }
+        function resetTasks() { localStorage.removeItem(`tasks_${new Date().toLocaleDateString()}`); loadTasks(); }
+        // Hatim Functions
+        function loadHatimList() { hatimList = JSON.parse(localStorage.getItem('hatimList')) || []; renderHatimList(); }
+        function saveHatimList() { localStorage.setItem('hatimList', JSON.stringify(hatimList)); renderHatimList(); }
+        function createNewHatim() { const name = document.getElementById('new-hatim-name').value.trim(); if(!name) return; hatimList.push({ id: Date.now(), name: name, page: currentQuranPage, date: new Date().toLocaleDateString() }); saveHatimList(); setActiveHatim(hatimList[hatimList.length-1].id); document.getElementById('new-hatim-name').value = ''; }
+        function setActiveHatim(id) { activeHatimId = id; const hatim = hatimList.find(h => h.id === id); if(hatim) { document.getElementById('active-hatim-display').classList.remove('hidden-force'); document.getElementById('active-hatim-display').classList.add('flex-force'); document.getElementById('active-hatim-name').textContent = hatim.name; fetchPage(hatim.page); closeModal('hatimListModal'); } }
+        function saveHatimLocation() { if(!activeHatimId) { alert("Lütfen önce bir Hatim seçin."); openModal('hatimListModal'); return; } const index = hatimList.findIndex(h => h.id === activeHatimId); if(index !== -1) { hatimList[index].page = currentQuranPage; hatimList[index].date = new Date().toLocaleDateString(); saveHatimList(); alert("Kaydedildi."); } }
+        function deleteHatim(id) { if(confirm('Silinsin mi?')) { hatimList = hatimList.filter(h => h.id !== id); if(activeHatimId === id) { activeHatimId = null; document.getElementById('active-hatim-display').classList.add('hidden-force'); } saveHatimList(); } }
+        function renderHatimList() { const container = document.getElementById('hatim-list-container'); container.innerHTML = ''; hatimList.forEach(hatim => { container.innerHTML += `<div class="flex items-center justify-between p-3 border-b"><div onclick="setActiveHatim(${hatim.id})" class="flex-1 cursor-pointer font-bold text-sm">${hatim.name} <span class="font-normal text-xs text-gray-500">(${hatim.page}. Sayfa)</span></div><button onclick="deleteHatim(${hatim.id})" class="text-red-500"><i class="fas fa-trash"></i></button></div>`; }); }
     </script>
 </body>
 </html>
