@@ -91,60 +91,63 @@
         .suggestion-item:hover { background-color: #ecfdf5; }
         .suggestion-item:last-child { border-bottom: none; }
         
-        /* Range Slider Customization */
-        input[type=range] { height: 6px; border-radius: 8px; -webkit-appearance: none; cursor: pointer; background: #e2e8f0; }
-        input[type=range]::-webkit-slider-thumb { width: 16px; height: 16px; border-radius: 50%; background: #10b981; box-shadow: 0 1px 3px rgba(0,0,0,0.3); -webkit-appearance: none; margin-top: -5px; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: #a7f3d0; border-radius: 8px; }
-        
         /* --- YATAY MOD (LANDSCAPE) STİLLERİ --- */
-        /* Sadece yatayda ve dikey yüksekliği az olan cihazlarda (mobiller) devreye girer */
-        @media (orientation: landscape) and (max-height: 500px) {
-            /* Gizlenecek Elemanlar */
-            header, #main-nav, .sticky, #default-tools, #scroll-tools {
-                display: none !important;
-            }
+        /* Düzeltme: max-height 600px yapılarak masaüstünde yanlışlıkla açılması engellendi */
+        @media only screen and (orientation: landscape) and (max-height: 600px) {
+            /* Gereksizleri Gizle */
+            header, #main-nav, .sticky, #default-tools, #scroll-tools { display: none !important; }
             
-            /* Ana Kapsayıcı Tam Ekran */
+            /* Ana Kapsayıcıyı Sıfırla ve Tam Ekran Yap */
             .w-full.max-w-md {
-                max-width: 100% !important;
+                max-width: none !important;
+                width: 100% !important;
                 height: 100% !important;
                 border-radius: 0 !important;
                 margin: 0 !important;
-            }
-            
-            /* Kuran Alanı Tam Ekran */
-            #tab-quran {
-                height: 100vh !important;
-                width: 100vw !important;
-            }
-            #quran-display {
-                padding: 0 !important;
-                height: 100vh !important;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: #fffdf5; /* Kuran kağıdı rengi hissiyatı */
-            }
-            #arabic-page {
-                height: 100vh !important;
-                width: 100% !important;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 0 !important;
-            }
-            #quran-page-image {
-                max-height: 100vh !important;
-                width: auto !important;
-                max-width: 100% !important;
-                object-fit: contain;
                 box-shadow: none !important;
             }
             
-            /* Yatay Mod Kontrolleri Göster */
-            #landscape-ui {
+            /* Kuran Sekmesi Tam Ekran */
+            #tab-quran {
                 display: flex !important;
+                height: 100vh !important;
+                width: 100vw !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 50;
+                background: #fffdf5;
             }
+            
+            /* Scroll Alanı */
+            #quran-display {
+                height: 100% !important;
+                width: 100% !important;
+                padding: 0 !important;
+                scroll-behavior: smooth;
+                background: #fffdf5;
+            }
+            
+            /* Resim Konteyneri */
+            #arabic-page {
+                width: 100% !important;
+                min-height: 100% !important;
+                display: block !important;
+                padding: 0 !important;
+            }
+            
+            /* Resim Ayarı - Genişliğe Yayılır, Aşağı Doğru Uzar */
+            #quran-page-image {
+                width: 100% !important;
+                height: auto !important;
+                max-width: none !important;
+                max-height: none !important;
+                display: block;
+                object-fit: cover;
+            }
+            
+            /* Landscape Kontrolleri Görünür */
+            #landscape-ui { display: flex !important; }
         }
 
         /* Yardımcı Sınıflar */
@@ -246,8 +249,12 @@
                 </div>
                 
                 <!-- YATAY MOD KONTROLLERİ (Sadece Landscape Modda Görünür) -->
-                <div id="landscape-ui" class="hidden absolute top-0 right-0 bottom-0 w-16 bg-black/30 flex-col items-center justify-center gap-4 z-50 p-2 backdrop-blur-sm transition-opacity hover:opacity-100 opacity-0" style="display:none;">
-                     <button onclick="toggleFullscreen()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-lg" title="Tam Ekran">
+                <div id="landscape-ui" class="hidden absolute top-0 right-0 bottom-0 w-16 bg-black/30 flex-col items-center justify-center gap-4 z-50 p-2 backdrop-blur-sm transition-opacity hover:opacity-100 opacity-0">
+                     <!-- Çıkış / Normal Görünüm Butonu -->
+                     <button onclick="alert('Lütfen cihazınızı dikey konuma getirin.');" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-lg hover:scale-110 transition" title="Menüyü Göster">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                     <button onclick="toggleFullscreen()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-lg hover:scale-110 transition" title="Tam Ekran">
                         <i class="fas fa-expand"></i>
                     </button>
                     
@@ -258,7 +265,7 @@
                         <button onclick="adjustScrollSpeed(-1)" class="speed-btn w-8 h-8 text-xs">-</button>
                     </div>
                     
-                    <button onclick="toggleAutoScroll()" id="land-play-btn" class="w-10 h-10 flex items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg pulse">
+                    <button onclick="toggleAutoScroll()" id="land-play-btn" class="w-12 h-12 flex items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg pulse hover:bg-emerald-700 transition">
                         <i class="fas fa-play"></i>
                     </button>
                 </div>
@@ -463,8 +470,8 @@
                 suggestionsBox.classList.remove('hidden');
                 matches.slice(0, 5).forEach(match => {
                     const div = document.createElement('div');
-                    div.className = 'suggestion-item px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-50';
-                    div.innerHTML = `<span class="font-medium">${match.label}</span> <span class="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full ml-2">${match.type}</span>`;
+                    div.className = 'suggestion-item';
+                    div.innerHTML = `<span>${match.label}</span> <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded">${match.type}</span>`;
                     div.onclick = () => { fetchPage(match.page); suggestionsBox.classList.add('hidden'); document.getElementById('unified-search').value = ''; };
                     suggestionsBox.appendChild(div);
                 });
