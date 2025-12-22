@@ -37,8 +37,8 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Güvenli Alanlar - Navigasyon için ekstra padding eklendi */
-        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 15px); } 
+        /* Güvenli Alanlar - Navigasyon için ekstra padding CİDDİ ORANDA artırıldı */
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 50px) !important; } 
         .pt-safe { padding-top: env(safe-area-inset-top, 20px); }
         
         /* Tab Geçişleri */
@@ -150,7 +150,7 @@
             display: flex !important;
         }
 
-        /* Reading Display: Dikeyde ortalama için flex yapısı */
+        /* Reading Display: ESKİ HALİNE DÖNDÜRÜLDÜ (Center Kaldırıldı) */
         #reading-display {
             flex: 1;
             height: 100%;
@@ -160,11 +160,7 @@
             touch-action: pan-y;
             scrollbar-width: none; 
             -ms-overflow-style: none;
-            /* Dikey ortalama ayarları */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            /* İçerik taşarsa flex-start, sığarsa center davranışı için margin:auto resme verilecek */
+            display: block; 
         }
         #reading-display::-webkit-scrollbar { display: none; }
 
@@ -208,29 +204,29 @@
         
         .reading-info-item {
             display: block;
-            font-size: 0.7rem;
+            font-size: 0.75rem; /* Biraz büyütüldü */
             color: #4b5563;
             margin-bottom: 5px;
             background: #ffffff;
-            padding: 4px;
+            padding: 6px 4px;
             border-radius: 6px;
             border: 1px solid #e5e7eb;
-            font-weight: 600;
+            font-weight: 700; /* Kalınlaştırıldı */
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
+        /* Resim Stili: ESKİ HALİNE DÖNDÜRÜLDÜ (Tam genişlik, aşağı doğru uzama) */
         body.reading-mode #quran-page-image {
             width: 100% !important;
             height: auto !important;
             max-height: none !important;
             object-fit: contain;
             display: block;
-            margin: auto; /* Dikey ortalama için kritik */
         }
         
-        /* Alt Menü Güvenli Alan ve Konum Düzeltmesi */
+        /* Alt Menü Güvenli Alan ve Konum Düzeltmesi (DAHA DA YÜKARI) */
         #main-nav {
             position: absolute;
             bottom: 0;
@@ -238,11 +234,11 @@
             z-index: 40;
             background-color: white;
             border-top: 1px solid #e5e7eb;
-            /* Güvenli alan + ekstra boşluk */
-            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 15px);
+            /* Güvenli alan + ekstra 50px boşluk = Telefon tuşlarının iyice üstüne çıkar */
+            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 50px);
             padding-top: 10px;
             height: auto;
-            min-height: 4rem;
+            min-height: 6rem; /* Yükseklik artırıldı */
         }
     </style>
 </head>
@@ -267,7 +263,7 @@
         <main class="flex-1 overflow-hidden bg-gray-50 relative">
             
             <!-- GÜNLÜK TAB -->
-            <div id="tab-home" class="tab-content active overflow-y-auto p-4 space-y-4 pb-28">
+            <div id="tab-home" class="tab-content active overflow-y-auto p-4 space-y-4 pb-32">
                 <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden shrink-0">
                     <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
                     <h2 class="font-bold text-lg mb-1">Günün Ayeti</h2>
@@ -334,7 +330,7 @@
                     </div>
 
                     <!-- Okuma Alanı (Normal) -->
-                    <div id="quran-display" class="quran-container flex-1 overflow-y-auto bg-gray-50 pb-32 relative text-center">
+                    <div id="quran-display" class="quran-container flex-1 overflow-y-auto bg-gray-50 pb-36 relative text-center">
                         <div id="arabic-page" class="w-full min-h-full flex flex-col items-center justify-start py-2">
                              <img id="quran-page-image" src="" alt="Kuran Sayfası" class="max-w-full w-auto h-auto shadow-sm rounded-sm" style="max-height: 100%;">
                         </div>
@@ -343,7 +339,7 @@
 
                 <!-- OKUMA MODU ARAYÜZÜ -->
                 <div id="reading-mode-layout" class="hidden h-full w-full bg-[#fffdf5]">
-                    <!-- Sol Taraf: Sayfa (Tam Ekran, Butonsuz) -->
+                    <!-- Sol Taraf: Sayfa (Tam Ekran, Butonsuz, Dikeyde Ortalanmış) -->
                     <div id="reading-display" class="no-scrollbar">
                         <!-- Görsel JS ile buraya yüklenecek -->
                     </div>
@@ -359,7 +355,8 @@
                         <div class="reading-info-box">
                             <span class="reading-info-item" id="reading-juz-info">1. Cüz</span>
                             <span class="reading-info-item" style="color:#059669;" id="reading-surah-info">Fâtiha</span>
-                            <span class="reading-info-item">Sayfa <span id="reading-page-info">0</span></span>
+                            <!-- SADECE NUMARA GÖSTERİMİ -->
+                            <span class="reading-info-item text-lg font-extrabold" id="reading-page-info">0</span>
                         </div>
                         
                         <div class="flex flex-col items-center gap-2 w-full mt-2">
@@ -424,8 +421,8 @@
             </div>
         </main>
 
-        <!-- Navbar -->
-        <nav id="main-nav" class="bg-white border-t border-gray-200 absolute bottom-0 w-full z-40 flex justify-around items-center">
+        <!-- Navbar (Yukarı Kaydırıldı) -->
+        <nav id="main-nav" class="bg-white border-t border-gray-200 absolute bottom-0 w-full z-40 flex justify-around items-center pb-safe">
             <button onclick="switchTab('home')" class="nav-btn active flex flex-col items-center justify-center w-full h-full text-emerald-600 transition duration-300">
                 <i class="fas fa-home text-xl mb-1"></i><span class="text-[10px] font-medium">Günlük</span>
             </button>
@@ -490,9 +487,9 @@
             {id:89,name:"Fecr",page:592},{id:90,name:"Beled",page:593},{id:91,name:"Şems",page:594},{id:92,name:"Leyl",page:594},
             {id:93,name:"Duhâ",page:595},{id:94,name:"İnşirâh",page:595},{id:95,name:"Tîn",page:596},{id:96,name:"Alak",page:596},
             {id:97,name:"Kadir",page:597},{id:98,name:"Beyyine",page:597},{id:99,name:"Zilzâl",page:598},{id:100,name:"Âdiyât",page:598},
-            {id:101,name:"Kâria",page:600},{id:102,name:"Tekâsür",page:600},{id:103,name:"Asr",page:601},{id:104,name:"Hümeze",page:601},
+            {id:101,name:"Kâria",page:599},{id:102,name:"Tekâsür",page:599},{id:103,name:"Asr",page:601},{id:104,name:"Hümeze",page:601},
             {id:105,name:"Fîl",page:601},{id:106,name:"Kureyş",page:602},{id:107,name:"Mâûn",page:602},{id:108,name:"Kevser",page:602},
-            {id:109,name:"Kâfirûn",page:602},{id:110,name:"Nasr",page:602},{id:111,name:"Tebbet",page:602},{id:112,name:"İhlâs",page:604},
+            {id:109,name:"Kâfirûn",page:603},{id:110,name:"Nasr",page:603},{id:111,name:"Tebbet",page:603},{id:112,name:"İhlâs",page:604},
             {id:113,name:"Felâk",page:604},{id:114,name:"Nâs",page:604}
         ];
 
@@ -600,7 +597,7 @@
             const rSurah = document.getElementById('reading-surah-info');
             const rJuz = document.getElementById('reading-juz-info');
             
-            if(rPage) rPage.textContent = `${page}`;
+            if(rPage) rPage.textContent = `${page}`; // Sayfa kelimesi kaldırıldı
             if(rSurah) rSurah.textContent = `${activeSurah}`;
             if(rJuz) rJuz.textContent = `${activeJuz}. Cüz`;
         }
@@ -656,9 +653,11 @@
             readingContainer.innerHTML = '';
             const newImg = document.createElement('img');
             newImg.src = src;
+            newImg.id = "reading-image"; // ID verelim (CSS için)
             newImg.onload = () => {
                 loader.classList.add('hidden');
                 document.getElementById('quran-display').scrollTop = 0;
+                // Reading modda da başa sar (scroll açıksa sarmasın)
                 if (!isAutoScrolling) readingContainer.scrollTop = 0;
             };
             readingContainer.appendChild(newImg);
@@ -712,6 +711,7 @@
             scrollSpeed = newSpeed;
             document.getElementById('speed-display').textContent = scrollSpeed;
             if(document.getElementById('speed-display-reading')) document.getElementById('speed-display-reading').textContent = scrollSpeed;
+            if(document.getElementById('speed-display-land')) document.getElementById('speed-display-land').textContent = scrollSpeed;
         }
         
         // --- OKUMA MODU GEÇİŞLERİ (GÜNCELLENDİ) ---
