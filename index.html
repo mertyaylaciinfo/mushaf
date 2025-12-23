@@ -37,8 +37,8 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Güvenli Alanlar - Navigasyon için ekstra padding daha da artırıldı (+70px) */
-        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 70px) !important; } 
+        /* Güvenli Alanlar - Navigasyon için ekstra padding daha da artırıldı (+90px) */
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 90px) !important; } 
         .pt-safe { padding-top: env(safe-area-inset-top, 20px); }
         
         /* Tab Geçişleri */
@@ -128,23 +128,6 @@
             top: 0; left: 0; right: 0; bottom: 0;
             z-index: 9999;
         }
-
-        /* YATAY MOD ZORLAMA (Sanal Döndürme) */
-        /* Eğer ekran dikeyse ve reading-mode aktifse, içeriği döndür */
-        @media screen and (orientation: portrait) {
-            body.reading-mode .w-full.max-w-md {
-                transform: rotate(90deg);
-                transform-origin: bottom left;
-                width: 100vh !important;
-                height: 100vw !important;
-                position: fixed;
-                top: -100vw;
-                left: 0;
-            }
-            /* Döndürüldüğünde touch kontrollerini düzeltmek zor olabilir, 
-               bu yüzden kullanıcıya cihazı çevirmesini söylemek daha sağlıklıdır.
-               Ancak "zorla" dendiği için CSS transform deniyoruz. */
-        }
         
         body.reading-mode #tab-quran {
             height: 100% !important;
@@ -167,7 +150,7 @@
             display: flex !important;
         }
 
-        /* Reading Display */
+        /* Reading Display: Dikeyde ortalama için flex yapısı */
         #reading-display {
             flex: 1;
             height: 100%;
@@ -177,6 +160,7 @@
             touch-action: pan-y;
             scrollbar-width: none; 
             -ms-overflow-style: none;
+            /* Dikey ortalama ayarları - Sayfayı dikeyde ve yatayda ortala */
             display: flex;
             align-items: center; 
             justify-content: center;
@@ -198,6 +182,7 @@
             height: 100%;
         }
         
+        /* Okuma Modu Buton Stili - Güncellendi (Yeşil) */
         .reading-mode-toggle-btn {
             width: 44px; height: 44px;
             display: flex; align-items: center; justify-content: center;
@@ -211,7 +196,7 @@
         }
         .reading-mode-toggle-btn:active { transform: scale(0.95); }
         .reading-mode-toggle-btn.active {
-            background-color: #ef4444; 
+            background-color: #10b981; /* Kırmızıdan Yeşile çevrildi */
         }
         
         .reading-info-box {
@@ -223,30 +208,32 @@
         
         .reading-info-item {
             display: block;
-            font-size: 0.75rem; 
+            font-size: 0.7rem;
             color: #4b5563;
             margin-bottom: 5px;
             background: #ffffff;
             padding: 6px 4px;
             border-radius: 6px;
             border: 1px solid #e5e7eb;
-            font-weight: 700;
+            font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
+        /* Resim Stili: Dikeyde ortalama ve sığdırma için güncellendi */
+        /* PC ve Mobil Dikeyde Sorunsuz Görünüm İçin */
         body.reading-mode #quran-page-image {
             width: auto !important; 
             height: auto !important; 
             max-width: 100% !important; 
-            max-height: 100% !important; 
+            max-height: 100vh !important; /* Ekran yüksekliğine sığdır */
             object-fit: contain; 
             display: block;
-            margin: auto; 
+            margin: auto; /* Ortala */
         }
         
-        /* Alt Menü Güvenli Alan ve Konum Düzeltmesi (DAHA DA YÜKARI +70px) */
+        /* Alt Menü Güvenli Alan ve Konum Düzeltmesi (DAHA DA YÜKARI +90px) */
         #main-nav {
             position: absolute;
             bottom: 0;
@@ -254,8 +241,8 @@
             z-index: 40;
             background-color: white;
             border-top: 1px solid #e5e7eb;
-            /* Güvenli alan + ekstra 70px boşluk */
-            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 70px);
+            /* Güvenli alan + ekstra 90px boşluk */
+            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 90px);
             padding-top: 10px;
             height: auto;
             min-height: 6rem; 
@@ -275,13 +262,8 @@
 </head>
 <body class="text-gray-800 h-screen flex justify-center overflow-hidden bg-gray-100">
 
-    <!-- Yatay Döndürme Uyarısı -->
-    <div id="rotate-warning">
-        <i class="fas fa-mobile-alt fa-rotate-90 text-4xl mb-4"></i>
-        <p class="text-lg font-bold">Lütfen Ekranı Yan Çevirin</p>
-        <p class="text-sm text-gray-300 mt-2">Okuma modu için yatay görünüm gereklidir.</p>
-        <button onclick="toggleReadingMode()" class="mt-8 px-4 py-2 bg-white text-black rounded-lg text-sm font-bold">Çıkış</button>
-    </div>
+    <!-- Yatay Döndürme Uyarısı (Kaldırıldı veya İsteğe Bağlı) -->
+    <!-- Kullanıcı dikey modda da okumak istediği için uyarı kaldırıldı -->
 
     <div id="main-container" class="w-full max-w-md h-full bg-white shadow-2xl relative flex flex-col overflow-hidden sm:rounded-xl sm:h-[95vh] sm:my-auto transition-all duration-300">
         
@@ -750,7 +732,6 @@
             scrollSpeed = newSpeed;
             document.getElementById('speed-display').textContent = scrollSpeed;
             if(document.getElementById('speed-display-reading')) document.getElementById('speed-display-reading').textContent = scrollSpeed;
-            if(document.getElementById('speed-display-land')) document.getElementById('speed-display-land').textContent = scrollSpeed;
         }
         
         // --- OKUMA MODU GEÇİŞLERİ (GÜNCELLENDİ) ---
