@@ -37,8 +37,8 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Güvenli Alanlar - Navigasyon için ekstra padding daha da artırıldı (+90px) */
-        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 90px) !important; } 
+        /* Güvenli Alanlar - Navigasyon padding düzeltildi (80px) */
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 80px) !important; } 
         .pt-safe { padding-top: env(safe-area-inset-top, 20px); }
         
         /* Tab Geçişleri */
@@ -150,7 +150,7 @@
             display: flex !important;
         }
 
-        /* Reading Display: Dikeyde ortalama için flex yapısı */
+        /* Reading Display: Dikey Ortalamayı Sağlar */
         #reading-display {
             flex: 1;
             height: 100%;
@@ -160,11 +160,18 @@
             touch-action: pan-y;
             scrollbar-width: none; 
             -ms-overflow-style: none;
-            /* Dikey ortalama ayarları - Sayfayı dikeyde ve yatayda ortala */
+            /* Ortalamayı sağlar, içerik uzunsa scroll olur */
             display: flex;
-            align-items: center; 
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; 
         }
+        /* Eğer içerik ekran boyunu geçerse justify-content: flex-start olmalı ki üstü kesilmesin */
+        #reading-display::before, #reading-display::after {
+            content: ""; flex-grow: 1; height: 0; /* Minik hack: Flex ortalamada taşmayı düzeltmek için */
+            display: none; /* Varsayılan kapalı */
+        }
+        
         #reading-display::-webkit-scrollbar { display: none; }
 
         .reading-sidebar {
@@ -182,7 +189,6 @@
             height: 100%;
         }
         
-        /* Okuma Modu Buton Stili - Güncellendi (Yeşil) */
         .reading-mode-toggle-btn {
             width: 44px; height: 44px;
             display: flex; align-items: center; justify-content: center;
@@ -196,7 +202,7 @@
         }
         .reading-mode-toggle-btn:active { transform: scale(0.95); }
         .reading-mode-toggle-btn.active {
-            background-color: #10b981; /* Kırmızıdan Yeşile çevrildi */
+            background-color: #10b981; /* Yeşil kalması istendi */
         }
         
         .reading-info-box {
@@ -221,19 +227,27 @@
             text-overflow: ellipsis;
         }
 
-        /* Resim Stili: Dikeyde ortalama ve sığdırma için güncellendi */
-        /* PC ve Mobil Dikeyde Sorunsuz Görünüm İçin */
+        /* Resim Stili: PC ve Mobil Dikeyde Sorunsuz Görünüm İçin */
         body.reading-mode #quran-page-image {
             width: auto !important; 
             height: auto !important; 
             max-width: 100% !important; 
-            max-height: 100vh !important; /* Ekran yüksekliğine sığdır */
+            /* Ekran yüksekliğine sığdır, ama scroll gerekiyorsa izin ver */
+            max-height: 100vh !important; 
             object-fit: contain; 
             display: block;
             margin: auto; /* Ortala */
         }
         
-        /* Alt Menü Güvenli Alan ve Konum Düzeltmesi (DAHA DA YÜKARI +90px) */
+        /* Eğer ekran küçükse ve resim sığmıyorsa margin-top/bottom otomatik olmalı */
+        @media (max-width: 768px) {
+            body.reading-mode #quran-page-image {
+                 /* Mobilde genişliğe tam oturması için */
+                 max-width: 100vw !important;
+            }
+        }
+        
+        /* Alt Menü Güvenli Alan ve Konum Düzeltmesi */
         #main-nav {
             position: absolute;
             bottom: 0;
@@ -241,8 +255,8 @@
             z-index: 40;
             background-color: white;
             border-top: 1px solid #e5e7eb;
-            /* Güvenli alan + ekstra 90px boşluk */
-            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 90px);
+            /* Güvenli alan + ekstra 80px boşluk */
+            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 80px);
             padding-top: 10px;
             height: auto;
             min-height: 6rem; 
@@ -732,6 +746,7 @@
             scrollSpeed = newSpeed;
             document.getElementById('speed-display').textContent = scrollSpeed;
             if(document.getElementById('speed-display-reading')) document.getElementById('speed-display-reading').textContent = scrollSpeed;
+            if(document.getElementById('speed-display-land')) document.getElementById('speed-display-land').textContent = scrollSpeed;
         }
         
         // --- OKUMA MODU GEÇİŞLERİ (GÜNCELLENDİ) ---
