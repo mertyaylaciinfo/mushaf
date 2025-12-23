@@ -22,26 +22,22 @@
             background-color: #f0fdf4;
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior: none;
-            /* Mobil tarayıcı çubuğu sorunları için yükseklik fix */
             height: 100vh; 
             height: -webkit-fill-available;
             overflow: hidden;
         }
         
-        /* Özel Scrollbar (Genel) */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
-
-        /* Scrollbar Gizleme Utility (Butonlar için) */
+        
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Güvenli Alanlar - Navigasyon padding düzeltildi (80px) */
-        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 80px) !important; } 
+        /* Navigasyon Padding Ayarı (Düzeltildi: +60px) */
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 60px) !important; } 
         .pt-safe { padding-top: env(safe-area-inset-top, 20px); }
         
-        /* Tab Geçişleri */
         .tab-content { display: none; height: 100%; flex-direction: column; }
         .tab-content.active { display: flex; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -55,57 +51,22 @@
         .bead.active { z-index: 20; }
         .page-badge { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
         
-        /* BUTON STİLLERİ (Standart) */
-        .tool-btn {
-            width: 36px; height: 36px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 9999px;
-            background-color: #ecfdf5; 
-            color: #059669; 
-            border: 1px solid #d1fae5; 
-            transition: all 0.2s;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            cursor: pointer;
-            flex-shrink: 0;
-        }
+        /* Buton Stilleri */
+        .tool-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background-color: #ecfdf5; color: #059669; border: 1px solid #d1fae5; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer; flex-shrink: 0; }
         .tool-btn:hover { background-color: #d1fae5; color: #047857; transform: scale(1.05); }
         .tool-btn:active { transform: scale(0.95); }
         .tool-btn i { font-size: 1rem; }
         
-        /* Speed Control Buttons */
-        .speed-btn {
-            width: 30px; height: 30px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%;
-            background-color: white;
-            color: #059669;
-            border: 1px solid #10b981;
-            font-weight: bold;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.1s;
-        }
+        .speed-btn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: white; color: #059669; border: 1px solid #10b981; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: all 0.1s; }
         .speed-btn:active { transform: scale(0.9); background-color: #ecfdf5; }
 
-        /* Arama Önerileri */
-        #search-suggestions {
-            position: absolute; top: 100%; left: 0; right: 0;
-            background-color: white; border: 1px solid #e5e7eb;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-            border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem;
-            z-index: 50; max-height: 15rem; overflow-y: auto; display: none;
-        }
+        /* Arama */
+        #search-suggestions { position: absolute; top: 100%; left: 0; right: 0; background-color: white; border: 1px solid #e5e7eb; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; z-index: 50; max-height: 15rem; overflow-y: auto; display: none; }
         #search-suggestions:not(.hidden) { display: block; }
-
-        .suggestion-item {
-            padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151;
-            border-bottom: 1px solid #f9fafb; cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .suggestion-item { padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; border-bottom: 1px solid #f9fafb; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .suggestion-item:hover { background-color: #ecfdf5; }
         .suggestion-item:last-child { border-bottom: none; }
         
-        /* Yardımcı Sınıflar */
         .hidden-force { display: none !important; }
         .flex-force { display: flex !important; }
         
@@ -150,7 +111,7 @@
             display: flex !important;
         }
 
-        /* Reading Display: Dikey Ortalamayı Sağlar */
+        /* Reading Display: "Güvenli Ortalama" */
         #reading-display {
             flex: 1;
             height: 100%;
@@ -160,18 +121,11 @@
             touch-action: pan-y;
             scrollbar-width: none; 
             -ms-overflow-style: none;
-            /* Ortalamayı sağlar, içerik uzunsa scroll olur */
+            /* Flex ile ortalama YERİNE display:flex + margin:auto kullanacağız */
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center; 
+            /* justify-content: center; <- BU KALDIRILDI (Taşma sorununu önlemek için) */
         }
-        /* Eğer içerik ekran boyunu geçerse justify-content: flex-start olmalı ki üstü kesilmesin */
-        #reading-display::before, #reading-display::after {
-            content: ""; flex-grow: 1; height: 0; /* Minik hack: Flex ortalamada taşmayı düzeltmek için */
-            display: none; /* Varsayılan kapalı */
-        }
-        
         #reading-display::-webkit-scrollbar { display: none; }
 
         .reading-sidebar {
@@ -201,8 +155,9 @@
             cursor: pointer;
         }
         .reading-mode-toggle-btn:active { transform: scale(0.95); }
+        /* Yeşil kalması istendi */
         .reading-mode-toggle-btn.active {
-            background-color: #10b981; /* Yeşil kalması istendi */
+            background-color: #10b981; 
         }
         
         .reading-info-box {
@@ -227,27 +182,20 @@
             text-overflow: ellipsis;
         }
 
-        /* Resim Stili: PC ve Mobil Dikeyde Sorunsuz Görünüm İçin */
+        /* Resim Stili: margin: auto ile güvenli ortalama */
         body.reading-mode #quran-page-image {
             width: auto !important; 
             height: auto !important; 
             max-width: 100% !important; 
-            /* Ekran yüksekliğine sığdır, ama scroll gerekiyorsa izin ver */
-            max-height: 100vh !important; 
+            /* PC'de taşmayı önlemek için max-height */
+            /* Mobilde dikeyde de sığsın ama scroll yapılabilsin */
             object-fit: contain; 
             display: block;
-            margin: auto; /* Ortala */
+            /* BU KOD ORTALAR VE TAŞMAYI ÖNLER */
+            margin: auto; 
         }
         
-        /* Eğer ekran küçükse ve resim sığmıyorsa margin-top/bottom otomatik olmalı */
-        @media (max-width: 768px) {
-            body.reading-mode #quran-page-image {
-                 /* Mobilde genişliğe tam oturması için */
-                 max-width: 100vw !important;
-            }
-        }
-        
-        /* Alt Menü Güvenli Alan ve Konum Düzeltmesi */
+        /* Navigasyon Konumlandırma */
         #main-nav {
             position: absolute;
             bottom: 0;
@@ -255,29 +203,15 @@
             z-index: 40;
             background-color: white;
             border-top: 1px solid #e5e7eb;
-            /* Güvenli alan + ekstra 80px boşluk */
-            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 80px);
+            /* Padding azaltıldı */
+            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 60px);
             padding-top: 10px;
             height: auto;
-            min-height: 6rem; 
-        }
-
-        /* YATAY UYARI MESAJI */
-        #rotate-warning {
-            display: none;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 20000;
-            color: white; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-        }
-        @media screen and (orientation: portrait) {
-            body.reading-mode #rotate-warning { display: flex; }
+            min-height: 5rem;
         }
     </style>
 </head>
 <body class="text-gray-800 h-screen flex justify-center overflow-hidden bg-gray-100">
-
-    <!-- Yatay Döndürme Uyarısı (Kaldırıldı veya İsteğe Bağlı) -->
-    <!-- Kullanıcı dikey modda da okumak istediği için uyarı kaldırıldı -->
 
     <div id="main-container" class="w-full max-w-md h-full bg-white shadow-2xl relative flex flex-col overflow-hidden sm:rounded-xl sm:h-[95vh] sm:my-auto transition-all duration-300">
         
@@ -522,9 +456,9 @@
             {id:89,name:"Fecr",page:592},{id:90,name:"Beled",page:593},{id:91,name:"Şems",page:594},{id:92,name:"Leyl",page:594},
             {id:93,name:"Duhâ",page:595},{id:94,name:"İnşirâh",page:595},{id:95,name:"Tîn",page:596},{id:96,name:"Alak",page:596},
             {id:97,name:"Kadir",page:597},{id:98,name:"Beyyine",page:597},{id:99,name:"Zilzâl",page:598},{id:100,name:"Âdiyât",page:598},
-            {id:101,name:"Kâria",page:599},{id:102,name:"Tekâsür",page:599},{id:103,name:"Asr",page:600},{id:104,name:"Hümeze",page:600},
-            {id:105,name:"Fîl",page:600},{id:106,name:"Kureyş",page:601},{id:107,name:"Mâûn",page:601},{id:108,name:"Kevser",page:601},
-            {id:109,name:"Kâfirûn",page:602},{id:110,name:"Nasr",page:602},{id:111,name:"Tebbet",page:602},{id:112,name:"İhlâs",page:604},
+            {id:101,name:"Kâria",page:599},{id:102,name:"Tekâsür",page:599},{id:103,name:"Asr",page:601},{id:104,name:"Hümeze",page:601},
+            {id:105,name:"Fîl",page:601},{id:106,name:"Kureyş",page:602},{id:107,name:"Mâûn",page:602},{id:108,name:"Kevser",page:602},
+            {id:109,name:"Kâfirûn",page:603},{id:110,name:"Nasr",page:603},{id:111,name:"Tebbet",page:603},{id:112,name:"İhlâs",page:604},
             {id:113,name:"Felâk",page:604},{id:114,name:"Nâs",page:604}
         ];
 
@@ -746,7 +680,6 @@
             scrollSpeed = newSpeed;
             document.getElementById('speed-display').textContent = scrollSpeed;
             if(document.getElementById('speed-display-reading')) document.getElementById('speed-display-reading').textContent = scrollSpeed;
-            if(document.getElementById('speed-display-land')) document.getElementById('speed-display-land').textContent = scrollSpeed;
         }
         
         // --- OKUMA MODU GEÇİŞLERİ (GÜNCELLENDİ) ---
