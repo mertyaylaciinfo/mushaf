@@ -37,8 +37,8 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Güvenli Alanlar - Navigasyon için ekstra padding CİDDİ ORANDA artırıldı */
-        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 50px) !important; } 
+        /* Güvenli Alanlar - Navigasyon için ekstra padding daha da artırıldı (+70px) */
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 70px) !important; } 
         .pt-safe { padding-top: env(safe-area-inset-top, 20px); }
         
         /* Tab Geçişleri */
@@ -128,6 +128,23 @@
             top: 0; left: 0; right: 0; bottom: 0;
             z-index: 9999;
         }
+
+        /* YATAY MOD ZORLAMA (Sanal Döndürme) */
+        /* Eğer ekran dikeyse ve reading-mode aktifse, içeriği döndür */
+        @media screen and (orientation: portrait) {
+            body.reading-mode .w-full.max-w-md {
+                transform: rotate(90deg);
+                transform-origin: bottom left;
+                width: 100vh !important;
+                height: 100vw !important;
+                position: fixed;
+                top: -100vw;
+                left: 0;
+            }
+            /* Döndürüldüğünde touch kontrollerini düzeltmek zor olabilir, 
+               bu yüzden kullanıcıya cihazı çevirmesini söylemek daha sağlıklıdır.
+               Ancak "zorla" dendiği için CSS transform deniyoruz. */
+        }
         
         body.reading-mode #tab-quran {
             height: 100% !important;
@@ -150,7 +167,7 @@
             display: flex !important;
         }
 
-        /* Reading Display: ESKİ HALİNE DÖNDÜRÜLDÜ (Center Kaldırıldı) */
+        /* Reading Display */
         #reading-display {
             flex: 1;
             height: 100%;
@@ -160,7 +177,9 @@
             touch-action: pan-y;
             scrollbar-width: none; 
             -ms-overflow-style: none;
-            display: block; 
+            display: flex;
+            align-items: center; 
+            justify-content: center;
         }
         #reading-display::-webkit-scrollbar { display: none; }
 
@@ -204,29 +223,30 @@
         
         .reading-info-item {
             display: block;
-            font-size: 0.75rem; /* Biraz büyütüldü */
+            font-size: 0.75rem; 
             color: #4b5563;
             margin-bottom: 5px;
             background: #ffffff;
             padding: 6px 4px;
             border-radius: 6px;
             border: 1px solid #e5e7eb;
-            font-weight: 700; /* Kalınlaştırıldı */
+            font-weight: 700;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        /* Resim Stili: ESKİ HALİNE DÖNDÜRÜLDÜ (Tam genişlik, aşağı doğru uzama) */
         body.reading-mode #quran-page-image {
-            width: 100% !important;
-            height: auto !important;
-            max-height: none !important;
-            object-fit: contain;
+            width: auto !important; 
+            height: auto !important; 
+            max-width: 100% !important; 
+            max-height: 100% !important; 
+            object-fit: contain; 
             display: block;
+            margin: auto; 
         }
         
-        /* Alt Menü Güvenli Alan ve Konum Düzeltmesi (DAHA DA YÜKARI) */
+        /* Alt Menü Güvenli Alan ve Konum Düzeltmesi (DAHA DA YÜKARI +70px) */
         #main-nav {
             position: absolute;
             bottom: 0;
@@ -234,15 +254,34 @@
             z-index: 40;
             background-color: white;
             border-top: 1px solid #e5e7eb;
-            /* Güvenli alan + ekstra 50px boşluk = Telefon tuşlarının iyice üstüne çıkar */
-            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 50px);
+            /* Güvenli alan + ekstra 70px boşluk */
+            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 70px);
             padding-top: 10px;
             height: auto;
-            min-height: 6rem; /* Yükseklik artırıldı */
+            min-height: 6rem; 
+        }
+
+        /* YATAY UYARI MESAJI */
+        #rotate-warning {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 20000;
+            color: white; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        @media screen and (orientation: portrait) {
+            body.reading-mode #rotate-warning { display: flex; }
         }
     </style>
 </head>
 <body class="text-gray-800 h-screen flex justify-center overflow-hidden bg-gray-100">
+
+    <!-- Yatay Döndürme Uyarısı -->
+    <div id="rotate-warning">
+        <i class="fas fa-mobile-alt fa-rotate-90 text-4xl mb-4"></i>
+        <p class="text-lg font-bold">Lütfen Ekranı Yan Çevirin</p>
+        <p class="text-sm text-gray-300 mt-2">Okuma modu için yatay görünüm gereklidir.</p>
+        <button onclick="toggleReadingMode()" class="mt-8 px-4 py-2 bg-white text-black rounded-lg text-sm font-bold">Çıkış</button>
+    </div>
 
     <div id="main-container" class="w-full max-w-md h-full bg-white shadow-2xl relative flex flex-col overflow-hidden sm:rounded-xl sm:h-[95vh] sm:my-auto transition-all duration-300">
         
@@ -487,9 +526,9 @@
             {id:89,name:"Fecr",page:592},{id:90,name:"Beled",page:593},{id:91,name:"Şems",page:594},{id:92,name:"Leyl",page:594},
             {id:93,name:"Duhâ",page:595},{id:94,name:"İnşirâh",page:595},{id:95,name:"Tîn",page:596},{id:96,name:"Alak",page:596},
             {id:97,name:"Kadir",page:597},{id:98,name:"Beyyine",page:597},{id:99,name:"Zilzâl",page:598},{id:100,name:"Âdiyât",page:598},
-            {id:101,name:"Kâria",page:599},{id:102,name:"Tekâsür",page:599},{id:103,name:"Asr",page:601},{id:104,name:"Hümeze",page:601},
-            {id:105,name:"Fîl",page:601},{id:106,name:"Kureyş",page:602},{id:107,name:"Mâûn",page:602},{id:108,name:"Kevser",page:602},
-            {id:109,name:"Kâfirûn",page:603},{id:110,name:"Nasr",page:603},{id:111,name:"Tebbet",page:603},{id:112,name:"İhlâs",page:604},
+            {id:101,name:"Kâria",page:599},{id:102,name:"Tekâsür",page:599},{id:103,name:"Asr",page:600},{id:104,name:"Hümeze",page:600},
+            {id:105,name:"Fîl",page:600},{id:106,name:"Kureyş",page:601},{id:107,name:"Mâûn",page:601},{id:108,name:"Kevser",page:601},
+            {id:109,name:"Kâfirûn",page:602},{id:110,name:"Nasr",page:602},{id:111,name:"Tebbet",page:602},{id:112,name:"İhlâs",page:604},
             {id:113,name:"Felâk",page:604},{id:114,name:"Nâs",page:604}
         ];
 
