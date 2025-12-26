@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Tam ekran modları için meta etiketleri -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <title>Üç Aylar Rehberi</title>
     
     <!-- Tailwind CSS -->
@@ -45,8 +51,38 @@
         .tesbih-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; display: flex; justify-content: center; background: radial-gradient(circle at center, #f8fafc 0%, #e2e8f0 100%); touch-action: none; }
         .tesbih-string { position: absolute; top: -200px; bottom: -200px; width: 4px; background: #9ca3af; box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3); z-index: 0; left: 50%; transform: translateX(-50%); }
         .bead-wrapper { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); width: 100px; height: 550px; }
-        .bead { width: 70px; height: 60px; border-radius: 45%; position: absolute; left: 50%; margin-left: -35px; z-index: 10; background: radial-gradient(circle at 35% 35%, #f59e0b, #b45309); box-shadow: inset -3px -3px 10px rgba(0,0,0,0.4), inset 3px 3px 10px rgba(255,255,255,0.4), 0 5px 10px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; transition: transform 0.1s linear; pointer-events: none; }
-        .bead::after { content: ''; width: 10px; height: 5px; background: #451a03; border-radius: 50%; opacity: 0.7; box-shadow: inset 0 1px 2px rgba(0,0,0,0.8); }
+        
+        /* Tesbih Tanesi Güncellemesi - Görsel Kullanımı */
+        .bead { 
+            width: 70px; 
+            height: 70px; /* Kare olması görsel için daha iyi */
+            position: absolute; 
+            left: 50%; 
+            margin-left: -35px; 
+            z-index: 10; 
+            
+            /* Görsel Ayarları */
+            background-image: url('https://mertyaylaciinfo.github.io/mushaf/tesbih.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent; /* Arka plan yok */
+            
+            /* Eski stil temizliği */
+            border-radius: 0; 
+            box-shadow: none; 
+            
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            transition: transform 0.1s linear; 
+            pointer-events: none; 
+            /* Hafif gölge efekti (görselin kendisine) */
+            filter: drop-shadow(0 4px 3px rgba(0,0,0,0.3));
+        }
+        /* Eski delik efektini kaldır */
+        .bead::after { display: none; content: none; }
+
         .bead.active { z-index: 20; }
         .page-badge { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
         
@@ -131,6 +167,11 @@
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
             box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.2);
+            /* BANNER IMAGE */
+            background-image: url('https://mertyaylaciinfo.github.io/mushaf/banner.png');
+            background-size: cover;
+            background-position: top center; 
+            background-repeat: no-repeat;
         }
         /* Collapsed State Styles */
         body.header-shrunk #dynamic-header {
@@ -178,49 +219,6 @@
             display: none; 
         }
 
-        /* --- KANDİL EFEKTLERİ --- */
-        .kandil-wrapper {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 5;
-            overflow: hidden;
-        }
-        
-        .kandil {
-            position: absolute;
-            top: -20px; 
-            transform-origin: top center;
-            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
-        }
-
-        .kandil-left { left: 8%; width: 45px; }
-        .kandil-right { right: 8%; width: 45px; }
-        .kandil-center { left: 50%; transform: translateX(-50%); width: 60px; top: -25px; }
-
-        .kandil-flame {
-            transform-origin: center bottom;
-            animation: flame-pulse 3s ease-in-out infinite alternate;
-        }
-        
-        .kandil-glow {
-            transform-origin: center center;
-            animation: glow-pulse 3s ease-in-out infinite alternate;
-        }
-
-        @keyframes flame-pulse {
-            0% { transform: scale(0.9); opacity: 0.7; }
-            50% { transform: scale(1.05); opacity: 0.95; }
-            100% { transform: scale(0.95); opacity: 0.8; }
-        }
-        
-        @keyframes glow-pulse {
-            0% { transform: scale(0.8); opacity: 0.3; }
-            100% { transform: scale(1.2); opacity: 0.6; }
-        }
-
         .arabesque-pattern {
             background-color: transparent;
             background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.12l-6.23-6.23a4.5 4.5 0 0 0-6.36 0 4.5 4.5 0 0 0 0 6.36L13.77 26.6l6.23 6.23 6.23-6.23 6.36-6.36a4.5 4.5 0 0 0 0-6.36 4.5 4.5 0 0 0-6.36 0L20 20.12zM20 0c11.046 0 20 8.954 20 20s-8.954 20-20 20S0 31.046 0 20 8.954 0 20 0zm0 2a18 18 0 1 0 0 36 18 18 0 0 0 0-36z' fill='%23ffffff' fill-opacity='0.07' fill-rule='evenodd'/%3E%3C/svg%3E");
@@ -238,47 +236,12 @@
         
         <!-- DYNAMIC HEADER -->
         <header id="dynamic-header" class="bg-gradient-to-br from-emerald-800 to-teal-900 text-white shadow-md z-20 shrink-0 pt-safe relative">
-            <!-- Arka Plan Deseni -->
-            <div class="absolute inset-0 arabesque-pattern opacity-30 pointer-events-none"></div>
+            <!-- Arka Plan Görseli için Overlay (Okunabilirlik için) -->
+            <div class="absolute inset-0 bg-black/30 pointer-events-none z-0"></div>
             
-            <!-- Kandiller -->
-            <div class="kandil-wrapper">
-                <!-- Sol Kandil -->
-                <div class="kandil kandil-left">
-                    <svg viewBox="0 0 100 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="50" y1="0" x2="50" y2="150" stroke="#fcd34d" stroke-width="2"/>
-                        <circle cx="50" cy="150" r="3" fill="#fcd34d"/>
-                        <path d="M25 160 Q15 210 50 240 Q85 210 75 160 H25 Z" fill="rgba(255,255,255,0.15)" stroke="#fcd34d" stroke-width="2"/>
-                        <path d="M48 200 Q50 180 52 200" stroke="#fcd34d" stroke-width="2"/>
-                        <circle cx="50" cy="210" r="15" fill="#fbbf24" filter="blur(8px)" class="kandil-glow"/>
-                        <path d="M50 220 Q40 200 50 185 Q60 200 50 220" fill="#fbbf24" class="kandil-flame"/>
-                    </svg>
-                </div>
-                <!-- Orta Kandil (Büyük) -->
-                <div class="kandil kandil-center">
-                    <svg viewBox="0 0 100 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="50" y1="0" x2="50" y2="180" stroke="#fcd34d" stroke-width="3"/>
-                        <circle cx="50" cy="180" r="4" fill="#fcd34d"/>
-                        <path d="M20 190 Q10 250 50 290 Q90 250 80 190 H20 Z" fill="rgba(255,255,255,0.2)" stroke="#fcd34d" stroke-width="3"/>
-                        <circle cx="50" cy="250" r="20" fill="#f59e0b" filter="blur(12px)" class="kandil-glow"/>
-                        <path d="M50 265 Q35 235 50 215 Q65 235 50 265" fill="#fbbf24" class="kandil-flame"/>
-                    </svg>
-                </div>
-                <!-- Sağ Kandil -->
-                <div class="kandil kandil-right">
-                     <svg viewBox="0 0 100 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="50" y1="0" x2="50" y2="150" stroke="#fcd34d" stroke-width="2"/>
-                        <circle cx="50" cy="150" r="3" fill="#fcd34d"/>
-                        <path d="M25 160 Q15 210 50 240 Q85 210 75 160 H25 Z" fill="rgba(255,255,255,0.15)" stroke="#fcd34d" stroke-width="2"/>
-                        <circle cx="50" cy="210" r="15" fill="#fbbf24" filter="blur(8px)" class="kandil-glow"/>
-                        <path d="M50 220 Q40 200 50 185 Q60 200 50 220" fill="#fbbf24" class="kandil-flame"/>
-                    </svg>
-                </div>
-            </div>
-
-            <div class="p-3 relative z-10">
+            <div class="p-3 relative z-20">
                 <!-- 1. Top Bar (Title & Date) -->
-                <div id="header-top-bar" class="flex justify-between items-center mb-2 mt-8">
+                <div id="header-top-bar" class="flex justify-between items-center mb-2 mt-4">
                     <div>
                         <h1 class="text-xl font-bold tracking-tight flex items-center gap-2 drop-shadow-md">
                             <i class="fas fa-moon text-yellow-300"></i> <span style="font-family: 'Amiri', serif;">Üç Aylar Rehberi</span>
@@ -286,13 +249,11 @@
                         <p class="text-xs text-emerald-100 opacity-90 font-medium" id="current-date">Yükleniyor...</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <!-- Cloud Sync Button -->
-                        <button onclick="document.getElementById('auth-overlay').classList.remove('hidden')" class="text-xs bg-black/20 backdrop-blur-sm p-1.5 rounded-full border border-white/20 shadow-sm text-white hover:bg-white/10 transition" title="Bulut Kaydı">
-                            <i class="fas fa-cloud"></i>
+                        <!-- User Name Display / Cloud Button -->
+                        <button id="auth-status-btn" onclick="openAuthModal()" class="text-xs bg-black/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/20 shadow-sm text-white hover:bg-white/10 transition flex items-center gap-2" title="Hesap Durumu">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="user-display-name">Giriş Yap</span>
                         </button>
-                        <div id="active-hatim-display" class="hidden-force text-xs bg-black/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/20 shadow-sm flex items-center gap-2">
-                            <i class="fas fa-bookmark text-yellow-300 text-[10px]"></i> <span id="active-hatim-name" class="truncate max-w-[80px] font-medium text-white"></span>
-                        </div>
                     </div>
                 </div>
 
@@ -598,10 +559,13 @@
             </div>
         </main>
 
-        <!-- Navbar (Updated Theme) -->
-        <nav id="main-nav" class="bg-gradient-to-r from-emerald-800 to-teal-900 border-t border-white/20 absolute bottom-0 w-full z-40 flex justify-between items-center pb-safe px-1 shadow-2xl relative overflow-hidden">
-            <!-- Arka Plan Deseni -->
-            <div class="absolute inset-0 arabesque-pattern opacity-30 pointer-events-none"></div>
+        <!-- Navbar (Updated Theme - Image Background) -->
+        <nav id="main-nav" class="border-t border-white/20 absolute bottom-0 w-full z-40 flex justify-between items-center pb-safe px-1 shadow-2xl relative overflow-hidden bg-emerald-900">
+            <!-- Arka Plan Görseli -->
+             <div class="absolute inset-0 z-0" style="background-image: url('https://mertyaylaciinfo.github.io/mushaf/alt.png'); background-size: cover; background-position: center; background-repeat: no-repeat;"></div>
+             
+             <!-- Karartma Overlay (Üstteki ile uyumlu) -->
+             <div class="absolute inset-0 bg-black/30 z-0 pointer-events-none"></div>
             
             <button onclick="switchTab('home')" class="nav-btn active flex-1 flex flex-col items-center justify-center h-full text-yellow-300 transition duration-300 py-2 relative z-10">
                 <i class="fas fa-home text-xl mb-1"></i><span class="text-[10px] font-medium">Günlük</span>
@@ -617,18 +581,29 @@
             </button>
         </nav>
         
-        <!-- Auth Modal (New - Email Only) -->
+        <!-- Auth Modal (New - Email Only & Dynamic) -->
         <div id="auth-overlay" class="fixed inset-0 bg-emerald-900/90 z-50 flex items-center justify-center p-6 hidden">
             <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center relative overflow-hidden">
+                 <!-- Close Button -->
+                 <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10">
+                    <i class="fas fa-times text-xl"></i>
+                 </button>
+                 
                  <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-teal-600"></div>
-                 <i class="fas fa-cloud-moon text-4xl text-emerald-600 mb-4 block"></i>
-                 <h2 class="text-xl font-bold text-gray-800 mb-2">Verilerinizi Koruyun</h2>
-                 <p class="text-sm text-gray-500 mb-6">İbadet kayıtlarınızı kaybetmemek için e-posta adresinizi girin. E-postanıza bağlı olarak otomatik kaydedilecektir.</p>
+                 <i class="fas fa-cloud-moon text-4xl text-emerald-600 mb-4 block mt-2"></i>
+                 <h2 class="text-xl font-bold text-gray-800 mb-2">Giriş Yap</h2>
+                 <p id="auth-info-text" class="text-sm text-gray-500 mb-6">İbadet kayıtlarınızı kaybetmemek için e-posta adresinizi girin.</p>
                  
-                 <input type="email" id="auth-email" placeholder="E-posta Adresiniz" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl mb-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                 <input type="email" id="auth-email" placeholder="E-posta Adresiniz" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl mb-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition">
                  
-                 <button onclick="handleAuth()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-emerald-200 active:scale-95 transition mb-3">
-                     Başla
+                 <!-- Hidden Name Input -->
+                 <div id="auth-name-container" class="hidden mb-4">
+                     <label class="block text-left text-xs text-gray-500 mb-1 ml-1">İsim Soyisim</label>
+                     <input type="text" id="auth-name" placeholder="Adınız Soyadınız" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                 </div>
+
+                 <button id="auth-action-btn" onclick="handleAuthAction()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-emerald-200 active:scale-95 transition mb-3">
+                     Devam Et
                  </button>
             </div>
         </div>
@@ -666,10 +641,9 @@
     <script type="module">
         // --- FIREBASE SETUP ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-        // User provided config
         const firebaseConfig = {
             apiKey: "AIzaSyC_5P4MjaA5q_TaFQFtA9qL04fJ3UyKu8g",
             authDomain: "mushaf-94211.firebaseapp.com",
@@ -684,64 +658,138 @@
         const db = getFirestore(app);
         const appId = 'mushaf-app-v1';
         let currentUser = null;
+        let isRegisterMode = false;
 
-        // Set persistence to LOCAL (Explicitly)
+        // Set persistence to LOCAL
         setPersistence(auth, browserLocalPersistence).catch((error) => console.error("Persistence Error", error));
 
-        // Global functions for non-module script access
-        window.auth = auth;
-        window.handleAuth = async () => {
-            const email = document.getElementById('auth-email').value;
-            // Constant password for UX simplicity as requested (Email-only login feel)
-            const password = "SimulatedPasswordForUX_123!"; 
+        // Global function for Sign Out
+        window.openAuthModal = () => {
+             if (currentUser) {
+                 if(confirm(`${currentUser.displayName || currentUser.email} hesabından çıkış yapılsın mı?`)) {
+                     signOut(auth).then(() => {
+                         alert("Çıkış yapıldı.");
+                         window.location.reload();
+                     });
+                 }
+             } else {
+                 document.getElementById('auth-overlay').classList.remove('hidden');
+             }
+        };
+
+        // GLOBAL AUTH HANDLER
+        window.handleAuthAction = async () => {
+            const emailInput = document.getElementById('auth-email');
+            const email = emailInput.value;
+            const password = "SimulatedPasswordForUX_123!"; // Hidden constant password
             
+            // Elements for UI updates
+            const nameInput = document.getElementById('auth-name');
+            const nameContainer = document.getElementById('auth-name-container');
+            const infoText = document.getElementById('auth-info-text');
+            const actionBtn = document.getElementById('auth-action-btn');
+
             if(!email) { alert("Lütfen e-posta giriniz."); return; }
             
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-                    try {
-                        await createUserWithEmailAndPassword(auth, email, password);
-                        // Save initial local data to cloud on first create
-                        syncAllToCloud();
-                    } catch (createError) {
-                        alert("Kayıt oluşturulamadı: " + createError.message);
+            // --- LOGIN ATTEMPT ---
+            if (!isRegisterMode) {
+                actionBtn.textContent = "Kontrol Ediliyor...";
+                actionBtn.disabled = true;
+
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    // If successful, onAuthStateChanged will handle the rest
+                } catch (error) {
+                    actionBtn.disabled = false;
+                    actionBtn.textContent = "Devam Et";
+
+                    if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                        // USER NOT FOUND -> SWITCH TO REGISTER MODE
+                        isRegisterMode = true;
+                        nameContainer.classList.remove('hidden');
+                        infoText.innerHTML = "<span class='text-amber-600 font-bold'>Kullanıcı bulunamadı.</span><br>Lütfen adınızı ve soyadınızı girerek kaydı tamamlayın.";
+                        actionBtn.textContent = "Kaydet ve Giriş Yap";
+                        emailInput.classList.add('bg-gray-100', 'text-gray-500');
+                        emailInput.readOnly = true; // Lock email
+                        nameInput.focus();
+                    } else if (error.code === 'auth/operation-not-allowed') {
+                        alert("Hata: Firebase panelinden Email/Password girişi aktif edilmemiş.");
+                    } else {
+                        alert("Giriş hatası: " + error.message);
                     }
-                } else {
-                    alert("Giriş hatası: " + error.message);
+                }
+            } 
+            // --- REGISTER ATTEMPT ---
+            else {
+                const fullName = nameInput.value;
+                if (!fullName) { alert("Lütfen adınızı ve soyadınızı giriniz."); return; }
+
+                actionBtn.textContent = "Kaydediliyor...";
+                actionBtn.disabled = true;
+
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+                    
+                    // Update Profile Name
+                    await updateProfile(user, { displayName: fullName });
+                    
+                    // Sync initial data immediately
+                    syncAllToCloud();
+                    
+                    // onAuthStateChanged will handle UI update
+                } catch (createError) {
+                    actionBtn.disabled = false;
+                    actionBtn.textContent = "Kaydet ve Giriş Yap";
+                    alert("Kayıt oluşturulamadı: " + createError.message);
                 }
             }
         };
 
         window.closeAuthModal = () => {
             document.getElementById('auth-overlay').classList.add('hidden');
+            // Reset modal state just in case
+            isRegisterMode = false;
+            document.getElementById('auth-name-container').classList.add('hidden');
+            document.getElementById('auth-info-text').textContent = "İbadet kayıtlarınızı kaybetmemek için e-posta adresinizi girin.";
+            document.getElementById('auth-action-btn').textContent = "Devam Et";
+            document.getElementById('auth-email').readOnly = false;
+            document.getElementById('auth-email').value = "";
+            document.getElementById('auth-name').value = "";
+            document.getElementById('auth-email').classList.remove('bg-gray-100', 'text-gray-500');
         };
 
         // Auth Listener
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                document.getElementById('auth-overlay').classList.add('hidden');
+                window.closeAuthModal(); // Close modal on success
+                
+                // Update Header UI with Name
+                const userDisplay = document.getElementById('user-display-name');
+                if(userDisplay) {
+                    userDisplay.textContent = `${user.displayName || 'Kullanıcı'}`;
+                    // Add subtle glow to indicate signed in state
+                    document.getElementById('auth-status-btn').classList.add('border-emerald-300', 'bg-emerald-600/30');
+                }
+
                 // Load Data from Cloud
                 const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'data', 'mainData');
                 try {
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        // Restore keys to localStorage
                         Object.keys(data).forEach(key => {
                             localStorage.setItem(key, data[key]);
                         });
-                        // Refresh UI
-                        window.location.reload(); 
+                        
+                        // Refresh Data UI without reload (NO RELOAD LOOP)
+                        if (window.refreshDataUI) window.refreshDataUI();
                     }
                 } catch(e) { console.error("Veri çekme hatası", e); }
             } else {
-                // Check if user has skipped before? For now show always if not logged in
-                // Or check if localStorage has data to determine if it's first run
+                // Show auth only if first time (no local data)
                 if (!localStorage.getItem('hatimList')) { 
-                    // New user or cleared cache
                     document.getElementById('auth-overlay').classList.remove('hidden');
                 }
             }
@@ -774,6 +822,35 @@
     </script>
 
     <script>
+        // --- DATA UI REFRESH FUNCTION (To avoid full page reload) ---
+        window.refreshDataUI = () => {
+            renderPrayerTracker();
+            renderFastingTracker();
+            renderSadakaTracker();
+            renderReligiousStudyTracker();
+            renderDailyDhikrs();
+            renderTevhidHatmi();
+            loadDebts();
+            loadHatimList();
+            renderDailyQuran();
+            renderSpecialQuranTasks();
+            updateDhikrUI();
+            
+            // Location refresh if changed
+            let loc = null;
+            try {
+                loc = JSON.parse(localStorage.getItem('userLocation'));
+            } catch(e) {}
+
+            if(loc) {
+                 // Update global variable
+                 locationData = loc;
+                 document.getElementById('location-display').textContent = `${loc.district}, ${loc.city}`;
+                 // Trigger fetch
+                 fetchPrayerTimes(loc.city, loc.district);
+            }
+        };
+
         // --- SCROLL ANIMATION FOR HEADER ---
         document.addEventListener('DOMContentLoaded', () => {
             const tabHome = document.getElementById('tab-home');
