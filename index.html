@@ -837,13 +837,32 @@
         const POINTS = {
             PRAYER_NORMAL: 6, 
             PRAYER_TAHAJJUD: 10, 
-            FASTING: 16,
+            FASTING: 20,
             QURAN_PAGE: 4, 
-            DHIKR: 2, 
+            DHIKR: 3, 
             SADAKA: 5,
             STUDY: 5,
-            SPECIAL_TASK: 5 
+            SPECIAL_TASK: 5, // 10'dan 5'e düşürüldü
+            TEVHID: 5 // Yeni Kelime-i Tevhid puanı eklendi
         };
+
+        // Yeni Fonksiyon: Zikir hedefini belirler
+        function getDhikrTarget(id) {
+            // Varsayılan hedef (static listeden)
+            let defaultTarget = 33;
+            const staticObj = dailyDhikrs.find(d => d.id === id);
+            if(staticObj) defaultTarget = staticObj.target;
+
+            // Uygunluk durumunu kontrol et
+            const isAvailable = localStorage.getItem('userAvailability') !== 'false';
+            
+            // Eğer uygun değilse ve id d1, d2 veya d3 ise hedefi 100 yap
+            if (!isAvailable && ['d1', 'd2', 'd3'].includes(id)) {
+                return 100;
+            }
+            
+            return defaultTarget;
+        }
 
         window.refreshDataUI = () => {
             renderPrayerTracker();
@@ -879,9 +898,44 @@
             const isChecked = document.getElementById('availability-toggle').checked;
             localStorage.setItem('userAvailability', isChecked);
             if (window.saveLocalAndRemote) window.saveLocalAndRemote('userAvailability', isChecked);
+            
+            // Eğer "Uygun Değilim" (unchecked/false) seçildiyse pasif görevleri o gün için SIFIRLA
+            if (!isChecked) {
+                const dateStr = new Date().toLocaleDateString();
+                
+                // 1. Namazları Sil
+                const prayerKey = `prayers_${dateStr}`;
+                if (localStorage.getItem(prayerKey)) {
+                    localStorage.removeItem(prayerKey);
+                    if(window.saveLocalAndRemote) window.saveLocalAndRemote(prayerKey, {});
+                }
+
+                // 2. Orucu Sil
+                const fastingKey = `fasting_${dateStr}`;
+                if (localStorage.getItem(fastingKey)) {
+                    localStorage.removeItem(fastingKey);
+                    if(window.saveLocalAndRemote) window.saveLocalAndRemote(fastingKey, {});
+                }
+
+                // 3. Kuran Sayfasını Sıfırla
+                const quranKey = `daily_quran_${dateStr}`;
+                const currentPages = parseInt(localStorage.getItem(quranKey)) || 0;
+                if (currentPages > 0) {
+                    localStorage.setItem(quranKey, 0);
+                    if(window.saveLocalAndRemote) window.saveLocalAndRemote(quranKey, 0);
+                }
+
+                // 4. Özel Kuran Görevlerini Sil
+                const specialKey = `special_tasks_${dateStr}`;
+                if (localStorage.getItem(specialKey)) {
+                    localStorage.removeItem(specialKey);
+                    if(window.saveLocalAndRemote) window.saveLocalAndRemote(specialKey, {});
+                }
+            }
+
             updateAvailabilityUI(isChecked);
-            // Refresh study tracker to toggle daily/weekly text immediately
-            renderReligiousStudyTracker();
+            // Tüm arayüzü ve puanları yenile (Puanlar yeni duruma göre tekrar hesaplanır)
+            refreshDataUI();
         }
 
         function updateAvailabilityUI(isAvailable) {
@@ -1105,7 +1159,9 @@
             updateAvailabilityUI(availability);
 
             if(locationData) { document.getElementById('location-display').textContent = `${locationData.district}, ${locationData.city}`; fetchPrayerTimes(locationData.city, locationData.district); } else { populateCitySelect(); }
-            const addSwipeTo = (element) => { let touchStartX = 0, touchEndX = 0, touchStartY = 0, touchEndY = 0; element.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY; }, {passive: true}); element.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; touchEndY = e.changedTouches[0].screenY; handleSwipe(); }, {passive: true}); const handleSwipe = () => { const diffX = touchEndX - touchStartX; const diffY = touchEndY - touchStartY; if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) { if (diffX < 0) changePage(1); else changePage(-1); } }; };
+            const addSwipeTo = (element) => { 
+                if (!element) return;
+                let touchStartX = 0, touchEndX = 0, touchStartY = 0, touchEndY = 0; element.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY; }, {passive: true}); element.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; touchEndY = e.changedTouches[0].screenY; handleSwipe(); }, {passive: true}); const handleSwipe = () => { const diffX = touchEndX - touchStartX; const diffY = touchEndY - touchStartY; if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) { if (diffX < 0) changePage(1); else changePage(-1); } }; };
             addSwipeTo(document.getElementById('quran-display')); if(document.getElementById('reading-display')) addSwipeTo(document.getElementById('reading-display'));
             toggleAccordion('acc-prayer', 'icon-prayer');
         });
@@ -1159,6 +1215,17 @@
         function calculateScore(dateStr) {
             let total = 0;
             let breakdown = [];
+            
+            // Kullanıcının uygunluk durumu kontrolü
+            const isAvailable = localStorage.getItem('userAvailability') !== 'false';
+
+            // DİNAMİK PUANLAMA AYARLARI
+            // Eğer uygunsa standart puanlar (POINTS nesnesinden), değilse özel artırılmış puanlar kullanılır.
+            const P_STUDY = isAvailable ? POINTS.STUDY : 20;
+            const P_TEVHID = isAvailable ? POINTS.TEVHID : 10;
+            const P_SADAKA = isAvailable ? POINTS.SADAKA : 10;
+            const P_DHIKR = isAvailable ? POINTS.DHIKR : 6;
+
             const prayerKey = `prayers_${dateStr}`;
             const prayerData = JSON.parse(localStorage.getItem(prayerKey)) || {};
             let prayerScore = 0; let teheccudScore = 0;
@@ -1184,37 +1251,50 @@
             if (fastingData['nafile'] || fastingData['kaza']) fastingScore = POINTS.FASTING;
             total += fastingScore;
             if(fastingScore > 0) breakdown.push({ label: 'Oruç', pts: fastingScore });
+            
             const dhikrKey = `daily_dhikr_counts_${dateStr}`;
             const dhikrData = JSON.parse(localStorage.getItem(dhikrKey)) || {};
             let dhikrScore = 0;
+            
             // Static zikirler
-            dailyDhikrs.forEach(d => { if ((dhikrData[d.id] || 0) >= 33) dhikrScore += POINTS.DHIKR; });
+            dailyDhikrs.forEach(d => { 
+                // Hedef kontrolü: Uygun değilse bazı zikirlerin hedefi 100 olabiliyor (getDhikrTarget fonksiyonuna göre)
+                // Ancak puan kazanmak için o anki hedefi tutturmak yeterli.
+                let target = 33;
+                if (!isAvailable && ['d1', 'd2', 'd3'].includes(d.id)) target = 100;
+                
+                if ((dhikrData[d.id] || 0) >= target) dhikrScore += P_DHIKR; 
+            });
+            
             // Günün özel zikri (Esma)
-            if ((dhikrData['d_special_daily'] || 0) >= 33) dhikrScore += POINTS.DHIKR;
+            if ((dhikrData['d_special_daily'] || 0) >= 33) dhikrScore += P_DHIKR;
+            
             total += dhikrScore;
             breakdown.push({ label: 'Günlük Zikirler', pts: dhikrScore });
+            
             const sadakaKey = `sadaka_${dateStr}`;
             const sadakaData = JSON.parse(localStorage.getItem(sadakaKey)) || { completed: false, amount: '' };
-            if (sadakaData.completed) { total += POINTS.SADAKA; breakdown.push({ label: 'Sadaka', pts: POINTS.SADAKA }); }
+            if (sadakaData.completed) { total += P_SADAKA; breakdown.push({ label: 'Sadaka', pts: P_SADAKA }); }
             
+            // Tevhid Logic
+            const tevhidKey = `tevhid_daily_${dateStr}`;
+            const tevhidCount = parseInt(localStorage.getItem(tevhidKey)) || 0;
+            if (tevhidCount >= 300) { 
+                total += P_TEVHID; 
+                breakdown.push({ label: 'Kelime-i Tevhid', pts: P_TEVHID }); 
+            }
+
             // Religious Study Scoring
-            const isAvailable = localStorage.getItem('userAvailability') !== 'false';
             let studyScore = 0;
             
             if (isAvailable) {
-                // Original logic: check current week (simplification in original code)
-                // To be precise for historical data we would need to know availability on that date, 
-                // but we only have current availability. We will stick to current availability setting.
-                // Note: The original code used new Date() inside calculateScore, ignoring dateStr. 
-                // This is a flaw for 'Average' calculation but consistent for 'Today'. 
-                // We will reproduce that behavior for consistency.
+                // Original logic: check current week
                 const weekKey = `religious_study_${getWeekKey(new Date())}`; 
-                if (localStorage.getItem(weekKey) === 'true') studyScore = POINTS.STUDY;
+                if (localStorage.getItem(weekKey) === 'true') studyScore = P_STUDY;
             } else {
                 // Daily logic
-                // Here dateStr is crucial
                 const dailyKey = `religious_study_daily_${dateStr}`;
-                if (localStorage.getItem(dailyKey) === 'true') studyScore = POINTS.STUDY;
+                if (localStorage.getItem(dailyKey) === 'true') studyScore = P_STUDY;
             }
             
             if (studyScore > 0) { total += studyScore; breakdown.push({ label: 'İlim Okuması', pts: studyScore }); }
@@ -1436,20 +1516,30 @@
             // 2. STANDART ZİKİRLER
             dailyDhikrs.forEach((dhikr) => { 
                 const count = counts[dhikr.id] || 0; 
-                const isTargetReached = count >= 33; 
+                // Dinamik hedef hesaplama (33 veya 100)
+                const target = getDhikrTarget(dhikr.id);
+                const isTargetReached = count >= target; 
+                
                 if (!isTargetReached) allCompleted = false;
                 const statusClass = isTargetReached ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-gray-100 hover:bg-gray-50'; 
                 const iconHtml = isTargetReached ? `<div class="w-5 h-5 rounded border bg-white border-transparent flex items-center justify-center"><i class="fas fa-check text-emerald-600 text-xs"></i></div>` : `<div class="w-5 h-5 rounded border border-gray-300 flex items-center justify-center"></div>`; 
                 const textClass = isTargetReached ? 'text-gray-600' : 'text-gray-800'; 
                 const countColor = isTargetReached ? 'text-emerald-600' : 'text-gray-400'; 
                 const completedLabel = isTargetReached ? `<span class="text-[10px] font-bold text-emerald-600 block text-right mt-0.5">Tamamlandı</span>` : ''; 
-                html += `<div class="border rounded-lg p-3 flex items-start gap-3 transition select-none ${statusClass}" onclick="startDhikrSession('${dhikr.id}')"><div class="mt-0.5 cursor-pointer" onclick="toggleManualCompletion(event, '${dhikr.id}')">${iconHtml}</div><div class="flex-1 cursor-pointer"><div class="flex justify-between items-start"><p class="text-xs font-medium ${textClass} leading-relaxed flex-1">${dhikr.text}</p><div class="flex flex-col items-end ml-2 shrink-0"><span class="text-xs font-bold ${countColor}">${count}/33</span>${completedLabel}</div></div></div></div>`; 
+                html += `<div class="border rounded-lg p-3 flex items-start gap-3 transition select-none ${statusClass}" onclick="startDhikrSession('${dhikr.id}')"><div class="mt-0.5 cursor-pointer" onclick="toggleManualCompletion(event, '${dhikr.id}')">${iconHtml}</div><div class="flex-1 cursor-pointer"><div class="flex justify-between items-start"><p class="text-xs font-medium ${textClass} leading-relaxed flex-1">${dhikr.text}</p><div class="flex flex-col items-end ml-2 shrink-0"><span class="text-xs font-bold ${countColor}">${count}/${target}</span>${completedLabel}</div></div></div></div>`; 
             }); 
             container.innerHTML = html; 
             updateHeaderTheme('header-dhikr', allCompleted);
             refreshAccordionHeight('acc-dhikr');
         }
-        function toggleManualCompletion(event, id) { event.stopPropagation(); const counts = getDailyCounts(); let current = counts[id] || 0; if (current >= 33) current = 0; else current = 33; saveDailyCount(id, current); renderDailyDhikrs(); refreshDataUI(); }
+        function toggleManualCompletion(event, id) { 
+            event.stopPropagation(); 
+            const counts = getDailyCounts(); 
+            let current = counts[id] || 0; 
+            const target = getDhikrTarget(id);
+            if (current >= target) current = 0; else current = target; 
+            saveDailyCount(id, current); renderDailyDhikrs(); refreshDataUI(); 
+        }
         
         function renderTevhidHatmi() { 
             const totalCount = parseInt(localStorage.getItem('tevhid_hatmi_total')) || 0; 
@@ -1469,7 +1559,7 @@
             const todayKey = `tevhid_daily_${new Date().toLocaleDateString()}`;
             let daily = parseInt(localStorage.getItem(todayKey)) || 0; daily += val;
             localStorage.setItem(todayKey, daily); if(window.saveLocalAndRemote) window.saveLocalAndRemote(todayKey, daily);
-            input.value = ''; renderTevhidHatmi(); 
+            input.value = ''; refreshDataUI(); 
         }
         function startTevhidSession() { activeDhikrId = 'tevhid_hatmi'; currentDhikr = "Lâ ilâhe illallâh"; dhikrCount = parseInt(localStorage.getItem('tevhid_hatmi_total')) || 0; updateDhikrUI(); switchTab('zikir'); }
         
@@ -1506,11 +1596,14 @@
                     // Kalması daha mantıklı (Özel olduğu için)
                 } else {
                     const currentDhikrObj = dailyDhikrs.find(d => d.id === activeDhikrId);
-                    if (currentDhikrObj && dhikrCount >= currentDhikrObj.target) {
-                        setTimeout(() => {
-                            const currentIndex = dailyDhikrs.findIndex(d => d.id === activeDhikrId);
-                            if (currentIndex !== -1 && currentIndex < dailyDhikrs.length - 1) startDhikrSession(dailyDhikrs[currentIndex + 1].id);
-                        }, 500); 
+                    if (currentDhikrObj) {
+                        const target = getDhikrTarget(activeDhikrId);
+                        if (dhikrCount >= target) {
+                            setTimeout(() => {
+                                const currentIndex = dailyDhikrs.findIndex(d => d.id === activeDhikrId);
+                                if (currentIndex !== -1 && currentIndex < dailyDhikrs.length - 1) startDhikrSession(dailyDhikrs[currentIndex + 1].id);
+                            }, 500); 
+                        }
                     }
                 }
             } else {
@@ -1521,6 +1614,10 @@
         
         function initZikirGestures() { 
             const touchArea = document.getElementById('touch-area'); const activeBead = document.getElementById('active-bead'); 
+            
+            // Safety check: if elements don't exist, exit without adding listeners
+            if (!touchArea || !activeBead) return;
+
             let startY = 0; let isDragging = false; 
             const handleStart = (y) => { isDragging = true; startY = y; activeBead.style.transition = 'none'; }; 
             const handleMove = (y) => { 
@@ -1539,15 +1636,19 @@
                         let daily = parseInt(localStorage.getItem(todayKey)) || 0; daily++;
                         localStorage.setItem(todayKey, daily); if(window.saveLocalAndRemote) window.saveLocalAndRemote(todayKey, daily);
                         renderTevhidHatmi(); 
+                        renderScoreTab();
                     } else if (activeDhikrId) { 
                         saveDailyCount(activeDhikrId, dhikrCount); renderDailyDhikrs(); 
                         if (activeDhikrId !== 'd_special_daily') {
                             const currentDhikrObj = dailyDhikrs.find(d => d.id === activeDhikrId);
-                            if (currentDhikrObj && dhikrCount >= currentDhikrObj.target) {
-                                setTimeout(() => {
-                                    const currentIndex = dailyDhikrs.findIndex(d => d.id === activeDhikrId);
-                                    if (currentIndex !== -1 && currentIndex < dailyDhikrs.length - 1) startDhikrSession(dailyDhikrs[currentIndex + 1].id);
-                                }, 500); 
+                            if (currentDhikrObj) {
+                                const target = getDhikrTarget(activeDhikrId);
+                                if (dhikrCount >= target) {
+                                    setTimeout(() => {
+                                        const currentIndex = dailyDhikrs.findIndex(d => d.id === activeDhikrId);
+                                        if (currentIndex !== -1 && currentIndex < dailyDhikrs.length - 1) startDhikrSession(dailyDhikrs[currentIndex + 1].id);
+                                    }, 500); 
+                                }
                             }
                         }
                     } else { 
@@ -1633,9 +1734,12 @@
             if (activeDhikrId && currentDhikr) { 
                 barContainer.classList.remove('hidden'); freeModeCounter.classList.add('hidden'); 
                 counterEl.textContent = dhikrCount; nameEl.textContent = currentDhikr; 
-                let target = 33; if (activeDhikrId === 'tevhid_hatmi') target = 70000; 
+                
+                let target = 33;
+                if (activeDhikrId === 'tevhid_hatmi') target = 70000;
                 else if (activeDhikrId === 'd_special_daily') target = 33;
-                else { const dhikrObj = dailyDhikrs.find(d => d.id === activeDhikrId); if(dhikrObj) target = dhikrObj.target; }
+                else target = getDhikrTarget(activeDhikrId);
+
                 targetDisplay.textContent = `/${target}`; 
                 if (dhikrCount >= target) counterEl.classList.add('goal-reached'); else counterEl.classList.remove('goal-reached'); 
             } else { 
@@ -1643,9 +1747,53 @@
                 document.getElementById('free-counter-display').textContent = dhikrCount; 
             } 
         }
-        function fetchPage(n) { if(n<0) n=0; if(n>totalPages) n=totalPages; currentQuranPage = n; document.getElementById('page-num').textContent = n; document.getElementById('trans-page-num').textContent = n; updateHeaderInfo(n); const src = `https://surahquran.com/img/pages-quran/mushaf/s${n}.png`; document.getElementById('quran-page-image').src = src; const rDisp = document.getElementById('reading-display'); if(rDisp) { rDisp.innerHTML = `<img src="${src}" class="w-full h-auto shadow-sm block">`; if(!isAutoScrolling) rDisp.scrollTop = 0; } }
+        function fetchPage(n) { 
+            if(n<0) n=0; 
+            if(n>totalPages) n=totalPages; 
+            currentQuranPage = n; 
+            
+            const pageNumEl = document.getElementById('page-num');
+            if (pageNumEl) pageNumEl.textContent = n;
+            
+            const transPageNumEl = document.getElementById('trans-page-num');
+            if (transPageNumEl) transPageNumEl.textContent = n;
+            
+            updateHeaderInfo(n); 
+            
+            const src = `https://surahquran.com/img/pages-quran/mushaf/s${n}.png`; 
+            const imgEl = document.getElementById('quran-page-image');
+            if (imgEl) imgEl.src = src; 
+            
+            const rDisp = document.getElementById('reading-display'); 
+            if(rDisp) { 
+                rDisp.innerHTML = `<img src="${src}" class="w-full h-auto shadow-sm block">`; 
+                if(!isAutoScrolling) rDisp.scrollTop = 0; 
+            } 
+        }
         function changePage(d) { fetchPage(currentQuranPage + d); }
-        function updateHeaderInfo(p) { let jIdx = 30; for(let i=0; i<juzList.length; i++) if(p < juzList[i].page) { jIdx = i; break; } if(jIdx===0) jIdx=1; let sName = "Fâtiha"; for(let i=0; i<surahList.length; i++) if(surahList[i].page > p) { sName = surahList[i-1]?surahList[i-1].name:"Fâtiha"; break; } if(p===604) sName="Nâs"; document.getElementById('current-juz-info').textContent = `${jIdx}. Cüz`; document.getElementById('current-surah-info').textContent = sName; if(document.getElementById('reading-page-info')) { document.getElementById('reading-page-info').textContent = p; document.getElementById('reading-surah-info').textContent = sName; document.getElementById('reading-juz-info').textContent = `${jIdx}. Cüz`; } }
+        function updateHeaderInfo(p) { 
+            let jIdx = 30; 
+            for(let i=0; i<juzList.length; i++) if(p < juzList[i].page) { jIdx = i; break; } 
+            if(jIdx===0) jIdx=1; 
+            
+            let sName = "Fâtiha"; 
+            for(let i=0; i<surahList.length; i++) if(surahList[i].page > p) { sName = surahList[i-1]?surahList[i-1].name:"Fâtiha"; break; } 
+            if(p===604) sName="Nâs"; 
+            
+            const juzEl = document.getElementById('current-juz-info');
+            if(juzEl) juzEl.textContent = `${jIdx}. Cüz`; 
+            
+            const surahEl = document.getElementById('current-surah-info');
+            if(surahEl) surahEl.textContent = sName; 
+            
+            const rPage = document.getElementById('reading-page-info');
+            const rSurah = document.getElementById('reading-surah-info');
+            const rJuz = document.getElementById('reading-juz-info');
+            
+            if(rPage) rPage.textContent = p; 
+            if(rSurah) rSurah.textContent = sName; 
+            if(rJuz) rJuz.textContent = `${jIdx}. Cüz`; 
+        }
         function handleSearchInput(value) { 
             const suggestionsBox = document.getElementById('search-suggestions'); const query = normalizeTr(value.trim()); suggestionsBox.innerHTML = ''; 
             if (query.length < 2 && !Number(query)) { suggestionsBox.classList.add('hidden'); return; } 
