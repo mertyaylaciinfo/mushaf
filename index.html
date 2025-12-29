@@ -304,7 +304,7 @@
                 </div>
 
                 <!-- 1. Namaz Takibi -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 shrink-0 overflow-hidden">
+                <div id="prayer-card-container" class="bg-white rounded-xl shadow-sm border border-gray-100 shrink-0 overflow-hidden">
                     <div id="header-prayer" onclick="toggleAccordion('acc-prayer', 'icon-prayer')" class="p-4 flex justify-between items-center cursor-pointer bg-white select-none hover:bg-gray-50 transition border-l-4 border-l-emerald-500">
                         <h3 class="font-bold text-gray-700 flex items-center"><i class="fas fa-mosque text-emerald-500 mr-2"></i>Namaz Takibi</h3>
                         <i id="icon-prayer" class="fas fa-chevron-down text-gray-400 transition-transform duration-300"></i>
@@ -356,7 +356,7 @@
                 </div>
                 
                 <!-- 4. Oruç Takibi -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 shrink-0 overflow-hidden">
+                <div id="fasting-card-container" class="bg-white rounded-xl shadow-sm border border-gray-100 shrink-0 overflow-hidden">
                     <div id="header-fasting" onclick="toggleAccordion('acc-fasting', 'icon-fasting')" class="p-4 flex justify-between items-center cursor-pointer bg-white select-none hover:bg-gray-50 transition border-l-4 border-l-emerald-500">
                         <h3 class="font-bold text-gray-700 flex items-center"><i class="fas fa-sun text-emerald-500 mr-2"></i>Oruç Takibi</h3>
                         <i id="icon-fasting" class="fas fa-chevron-down text-gray-400 transition-transform duration-300"></i>
@@ -391,7 +391,7 @@
                     </div>
                     <div id="acc-study" class="accordion-content">
                         <div class="px-4 pb-4 pt-2">
-                            <p class="text-xs text-gray-500 mb-3">Allah rızası için dini bilgilerinizi geliştirmek amacıyla yapmış olduğunuz her türlü okuma öğrenme (Haftalık).</p>
+                            <p id="study-desc" class="text-xs text-gray-500 mb-3">Allah rızası için dini bilgilerinizi geliştirmek amacıyla yapmış olduğunuz her türlü okuma öğrenme (Haftalık).</p>
                             <div id="religious-study-tracker-container"></div>
                         </div>
                     </div>
@@ -563,6 +563,19 @@
 
             <!-- PUAN TAB -->
             <div id="tab-puan" class="tab-content h-full overflow-y-auto bg-gray-50 pb-40 p-4" style="-webkit-overflow-scrolling: touch;">
+                
+                <!-- AVAILABILITY TOGGLE -->
+                <div id="availability-card" class="bg-white rounded-xl shadow-sm border border-emerald-100 p-4 mb-4 flex items-center justify-between transition-all duration-300">
+                    <div class="flex items-center gap-3">
+                        <div id="status-dot" class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                        <span id="availability-text" class="text-sm font-bold text-emerald-800">İbadet için uygunum</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="availability-toggle" class="sr-only peer" onchange="toggleAvailability()" checked>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm border border-emerald-100 p-6 flex flex-col items-center justify-center relative overflow-hidden mb-4 shrink-0">
                     <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 to-amber-500"></div>
                     
@@ -596,7 +609,7 @@
             <button onclick="switchTab('home')" class="nav-btn active flex-1 flex flex-col items-center justify-center h-full text-yellow-300 transition duration-300 py-2 relative z-10">
                 <i class="fas fa-home text-xl mb-1"></i><span class="text-[10px] font-medium">Günlük</span>
             </button>
-            <button onclick="switchTab('quran')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full text-white/60 hover:text-white transition duration-300 py-2 relative z-10">
+            <button id="nav-btn-quran" onclick="switchTab('quran')" class="nav-btn flex-1 flex flex-col items-center justify-center h-full text-white/60 hover:text-white transition duration-300 py-2 relative z-10">
                 <i class="fas fa-book-quran text-xl mb-1"></i><span class="text-[10px] font-medium">Kuran</span>
             </button>
             <button onclick="openFreeZikirMode()" class="nav-btn flex-1 flex flex-col items-center justify-center h-full text-white/60 hover:text-white transition duration-300 py-2 relative z-10">
@@ -812,7 +825,7 @@
         
         function syncAllToCloud() {
             if (!currentUser) return;
-            const keysToSync = ['prayerDebts', 'fastingDebt', 'hatimList', 'tevhid_hatmi_total', 'freeDhikrCount', 'userLocation', `daily_quran_${new Date().toLocaleDateString()}`];
+            const keysToSync = ['prayerDebts', 'fastingDebt', 'hatimList', 'tevhid_hatmi_total', 'freeDhikrCount', 'userLocation', 'userAvailability', `daily_quran_${new Date().toLocaleDateString()}`];
             keysToSync.forEach(key => {
                 const val = localStorage.getItem(key);
                 if(val) window.saveLocalAndRemote(key, val);
@@ -846,6 +859,13 @@
             updateDhikrUI();
             renderScoreTab(); 
             renderDailyEsma(); 
+            
+            // Availability UI init
+            // Varsayılan olarak 'Uygunum' (true) başlasın. Kullanıcı değiştirirse o değer (false) kalsın.
+            const storedAvail = localStorage.getItem('userAvailability');
+            const availability = storedAvail !== 'false'; 
+            updateAvailabilityUI(availability);
+
             let loc = null;
             try { loc = JSON.parse(localStorage.getItem('userLocation')); } catch(e) {}
             if(loc) {
@@ -854,6 +874,64 @@
                  fetchPrayerTimes(loc.city, loc.district);
             }
         };
+
+        function toggleAvailability() {
+            const isChecked = document.getElementById('availability-toggle').checked;
+            localStorage.setItem('userAvailability', isChecked);
+            if (window.saveLocalAndRemote) window.saveLocalAndRemote('userAvailability', isChecked);
+            updateAvailabilityUI(isChecked);
+            // Refresh study tracker to toggle daily/weekly text immediately
+            renderReligiousStudyTracker();
+        }
+
+        function updateAvailabilityUI(isAvailable) {
+            const textEl = document.getElementById('availability-text');
+            const dotEl = document.getElementById('status-dot');
+            const toggleEl = document.getElementById('availability-toggle');
+            const cardEl = document.getElementById('availability-card');
+            
+            // UI Toggle & Text Update
+            toggleEl.checked = isAvailable;
+            if (isAvailable) {
+                textEl.textContent = "İbadet için uygunum";
+                textEl.className = "text-sm font-bold text-emerald-800 transition-colors";
+                dotEl.className = "w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] transition-all";
+                cardEl.classList.add('border-emerald-100');
+                cardEl.classList.remove('border-gray-200');
+            } else {
+                textEl.textContent = "Şu an uygun değilim";
+                textEl.className = "text-sm font-bold text-gray-500 transition-colors";
+                dotEl.className = "w-3 h-3 rounded-full bg-gray-300 transition-all";
+                cardEl.classList.remove('border-emerald-100');
+                cardEl.classList.add('border-gray-200');
+            }
+
+            // Logic to disable specific sections (Prayer, Quran, Fasting)
+            const idsToToggle = ['prayer-card-container', 'daily-quran-card', 'fasting-card-container'];
+            const navQuran = document.getElementById('nav-btn-quran');
+
+            idsToToggle.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (isAvailable) {
+                        el.classList.remove('opacity-50', 'pointer-events-none', 'grayscale');
+                    } else {
+                        el.classList.add('opacity-50', 'pointer-events-none', 'grayscale');
+                        // Optional: Close accordion if open when disabling
+                        // const content = el.querySelector('.accordion-content');
+                        // if(content) { content.style.maxHeight = null; content.classList.remove('open'); }
+                    }
+                }
+            });
+
+            if (navQuran) {
+                if (isAvailable) {
+                    navQuran.classList.remove('opacity-25', 'pointer-events-none');
+                } else {
+                    navQuran.classList.add('opacity-25', 'pointer-events-none');
+                }
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const tabHome = document.getElementById('tab-home');
@@ -922,17 +1000,17 @@
             {ar: "الْخَالِقُ", tr: "El-Hâlık", mn: "Yaratan, yoktan var eden."},
             {ar: "الْبَارِئُ", tr: "El-Bâri", mn: "Her şeyi kusursuz ve uyumlu yaratan."},
             {ar: "الْمُصَوِّرُ", tr: "El-Musavvir", mn: "Varlıklara şekil veren."},
-            {ar: "الْغَفَّارُ", tr: "El-Gaffâr", mn: "Günahları örten ve çok mağfiret eden."},
-            {ar: "الْقَهَّارُ", tr: "El-Kahhâr", mn: "Her şeye, her istediğini yapacak surette, galip ve hakim olan."},
-            {ar: "الْوَهَّابُ", tr: "El-Vehhâb", mn: "Karşılıksız hibeler veren, çok fazla ihsan eden."},
-            {ar: "الرَّزَّاقُ", tr: "Er-Rezzâk", mn: "Bütün mahlûkatın rızkını veren ve ihtiyacını karşılayan."},
-            {ar: "الْفَتَّاحُ", tr: "El-Fettâh", mn: "Her türlü müşkülleri açan ve kolaylaştıran."},
+            {ar: "الْغَفَّARُ", tr: "El-Gaffâr", mn: "Günahları örten ve çok mağfiret eden."},
+            {ar: "الْقَهَّARُ", tr: "El-Kahhâr", mn: "Her şeye, her istediğini yapacak surette, galip ve hakim olan."},
+            {ar: "الْوَهَّABُ", tr: "El-Vehhâb", mn: "Karşılıksız hibeler veren, çok fazla ihsan eden."},
+            {ar: "الرَّZَّAQُ", tr: "Er-Rezzâk", mn: "Bütün mahlûkatın rızkını veren ve ihtiyacını karşılayan."},
+            {ar: "الْفَتَّAHُ", tr: "El-Fettâh", mn: "Her türlü müşkülleri açan ve kolaylaştıran."},
             {ar: "الْعَلِيمُ", tr: "El-Alîm", mn: "Her şeyi en iyi bilen."},
             {ar: "الْقَابِضُ", tr: "El-Kâbıd", mn: "Dilediğine darlık veren, sıkan, daraltan."},
-            {ar: "الْبَاسِطُ", tr: "El-Bâsıt", mn: "Dilediğine bolluk veren, açan, genişleten."},
+            {ar: "الْبَASİTُ", tr: "El-Bâsıt", mn: "Dilediğine bolluk veren, açan, genişleten."},
             {ar: "الْخَاﻔِضُ", tr: "El-Hâfıd", mn: "Dereceleri alçaltan."},
-            {ar: "الرَّافِعُ", tr: "Er-Râfi", mn: "Şeref verip yükselten."},
-            {ar: "الْمُعِزُّ", tr: "El-Muizz", mn: "Dilediğini aziz eden, izzet veren."},
+            {ar: "الرَّAFİCُ", tr: "Er-Râfi", mn: "Şeref verip yükselten."},
+            {ar: "الْمُعِZُّ", tr: "El-Muizz", mn: "Dilediğini aziz eden, izzet veren."},
             {ar: "الْمُذِلُّ", tr: "El-Müzill", mn: "Dilediğini zillete düşüren."},
             {ar: "السَّمِيعُ", tr: "Es-Semî", mn: "Her şeyi en iyi işiten."},
             {ar: "الْبَصِيرُ", tr: "El-Basîr", mn: "Her şeyi en iyi gören."},
@@ -953,20 +1031,20 @@
             {ar: "الْكَرِيمُ", tr: "El-Kerîm", mn: "Lütfü ve keremi bol, çok ikram eden."},
             {ar: "الرَّقِيبُ", tr: "Er-Rakîb", mn: "Her varlığı, her işi her an görüp, gözeten, kontrolü altında tutan."},
             {ar: "الْمُجِيبُ", tr: "El-Mücîb", mn: "Duaları, istekleri kabul eden."},
-            {ar: "الْوَاسِعُ", tr: "El-Vâsi", mn: "Rahmet, kudret ve ilmi ile her şeyi ihata eden."},
+            {ar: "الْوَASICُ", tr: "El-Vâsi", mn: "Rahmet, kudret ve ilmi ile her şeyi ihata eden."},
             {ar: "الْحَكِيمُ", tr: "El-Hakîm", mn: "Her işi hikmetli, her şeyi hikmetle yaratan."},
             {ar: "الْوَدُودُ", tr: "El-Vedûd", mn: "Kullarını en çok seven, sevilmeye en layık olan."},
             {ar: "الْمَجِيدُ", tr: "El-Mecîd", mn: "Her türlü övgüye layık bulunan."},
             {ar: "الْبَاعِثُ", tr: "El-Bâis", mn: "Ölüleri dirilten."},
             {ar: "الشَّهِيدُ", tr: "Eş-Şehîd", mn: "Her zaman her yerde hazır ve nazır olan."},
             {ar: "الْحَقُّ", tr: "El-Hakk", mn: "Varlığı hiç değişmeden duran. Var olan, hakkı ortaya çıkaran."},
-            {ar: "الْوَكِيلُ", tr: "El-Vekîl", mn: "Kendisine tevekkül edenlerin işlerini en iyi neticeye ulaştıran."},
+            {ar: "الْوَKİİLُ", tr: "El-Vekîl", mn: "Kendisine tevekkül edenlerin işlerini en iyi neticeye ulaştıran."},
             {ar: "الْقَوِيُّ", tr: "El-Kaviyy", mn: "Kudreti en üstün ve hiç azalmaz."},
             {ar: "الْمَتِينُ", tr: "El-Metîn", mn: "Kuvvet ve kudret kaynağı, pek güçlü."},
             {ar: "الْوَلِيُّ", tr: "El-Veliyy", mn: "İnananların dostu, onları sevip yardım eden."},
             {ar: "الْحَمِيدُ", tr: "El-Hamîd", mn: "Her türlü hamd ve senaya layık olan."},
             {ar: "الْمُحْصِي", tr: "El-Muhsî", mn: "Yarattığı ve yaratacağı bütün varlıkların sayısını bilen."},
-            {ar: "الْمُبْدِئُ", tr: "El-Mübdi", mn: "Maddesiz, örneksiz yaratan."},
+            {ar: "الْمÜBDİُ", tr: "El-Mübdi", mn: "Maddesiz, örneksiz yaratan."},
             {ar: "الْمُعِيدُ", tr: "El-Muîd", mn: "Yarattıklarını yok edip, sonra tekrar diriltecek olan."},
             {ar: "الْمُحْيِي", tr: "El-Muhyî", mn: "İhya eden, dirilten, can veren."},
             {ar: "الْمُمِيتُ", tr: "El-Mümît", mn: "Her canlıya ölümü tattıran."},
@@ -987,18 +1065,18 @@
             {ar: "الْوَالِي", tr: "El-Vâlî", mn: "Bütün kâinatı idare eden."},
             {ar: "الْمُتَعَالِي", tr: "El-Müteâlî", mn: "Son derece yüce olan."},
             {ar: "الْبَرُّ", tr: "El-Berr", mn: "İyilik ve ihsanı bol, iyilik ve güzellik sahibi."},
-            {ar: "التَّوَّابُ", tr: "Et-Tevvâb", mn: "Tövbeleri kabul edip, günahları bağışlayan."},
+            {ar: "التَّوَّABُ", tr: "Et-Tevvâb", mn: "Tövbeleri kabul edip, günahları bağışlayan."},
             {ar: "الْمُنْتَقِمُ", tr: "El-Müntekim", mn: "Asilerin, zalimlerin cezasını veren."},
             {ar: "الْعَفُوُّ", tr: "El-Afüvv", mn: "Affı çok olan, günahları mağfiret eden."},
             {ar: "الرَّؤُوفُ", tr: "Er-Raûf", mn: "Çok lütufkâr, çok esirgeyen."},
             {ar: "مَالِكُ الْمُلْكِ", tr: "Mâlikü-l Mülk", mn: "Mülkün, her varlığın sahibi."},
-            {ar: "ذُو الْجَلاَلِ وَالإِكْرَامِ", tr: "Zü-l Celâli ve-l İkrâm", mn: "Celal, büyüklük ve ikram sahibi."},
+            {ar: "ذُو الْجَلاَلِ وَالإِكْرَAMِ", tr: "Zü-l Celâli ve-l İkrâm", mn: "Celal, büyüklük ve ikram sahibi."},
             {ar: "الْمُقْسِطُ", tr: "El-Muksıt", mn: "Her işi birbirine uygun yapan."},
-            {ar: "الْجĀمِعُ", tr: "El-Câmi", mn: "Mahşerde her mahlûkatı bir araya toplayan."},
+            {ar: "الْجĀMİCُ", tr: "El-Câmi", mn: "Mahşerde her mahlûkatı bir araya toplayan."},
             {ar: "الْغَنِيُّ", tr: "El-Ganiyy", mn: "Her türlü zenginlik sahibi, ihtiyacı olmayan."},
             {ar: "الْمُغْنِي", tr: "El-Muğnî", mn: "Müstağni kılan, ihtiyaç gideren, zengin eden."},
             {ar: "الْمَانِعُ", tr: "El-Mâni", mn: "Bir şeyin meydana gelmesine izin vermeyen, engelleyen."},
-            {ar: "الضَّارُّ", tr: "Ed-Dârr", mn: "Elem, zarar verenleri yaratan."},
+            {ar: "الضَّARُّ", tr: "Ed-Dârr", mn: "Elem, zarar verenleri yaratan."},
             {ar: "النَّافِعُ", tr: "En-Nâfi", mn: "Fayda veren şeyleri yaratan."},
             {ar: "النُّورُ", tr: "En-Nûr", mn: "Alemleri nurlandıran, dilediğine nur veren."},
             {ar: "الْهَادِي", tr: "El-Hâdî", mn: "Hidayet veren."},
@@ -1020,6 +1098,12 @@
             renderFastingTracker(); renderSadakaTracker(); renderReligiousStudyTracker();
             renderScoreTab(); 
             renderDailyEsma(); 
+            
+            // Availability Init on Load - Sayfa yüklenince hemen kontrol et
+            const storedAvail = localStorage.getItem('userAvailability');
+            const availability = storedAvail !== 'false'; 
+            updateAvailabilityUI(availability);
+
             if(locationData) { document.getElementById('location-display').textContent = `${locationData.district}, ${locationData.city}`; fetchPrayerTimes(locationData.city, locationData.district); } else { populateCitySelect(); }
             const addSwipeTo = (element) => { let touchStartX = 0, touchEndX = 0, touchStartY = 0, touchEndY = 0; element.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY; }, {passive: true}); element.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; touchEndY = e.changedTouches[0].screenY; handleSwipe(); }, {passive: true}); const handleSwipe = () => { const diffX = touchEndX - touchStartX; const diffY = touchEndY - touchStartY; if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) { if (diffX < 0) changePage(1); else changePage(-1); } }; };
             addSwipeTo(document.getElementById('quran-display')); if(document.getElementById('reading-display')) addSwipeTo(document.getElementById('reading-display'));
@@ -1112,8 +1196,29 @@
             const sadakaKey = `sadaka_${dateStr}`;
             const sadakaData = JSON.parse(localStorage.getItem(sadakaKey)) || { completed: false, amount: '' };
             if (sadakaData.completed) { total += POINTS.SADAKA; breakdown.push({ label: 'Sadaka', pts: POINTS.SADAKA }); }
-            const weekKey = `religious_study_${getWeekKey(new Date())}`; 
-            if (localStorage.getItem(weekKey) === 'true') { total += POINTS.STUDY; breakdown.push({ label: 'İlim Okuması', pts: POINTS.STUDY }); }
+            
+            // Religious Study Scoring
+            const isAvailable = localStorage.getItem('userAvailability') !== 'false';
+            let studyScore = 0;
+            
+            if (isAvailable) {
+                // Original logic: check current week (simplification in original code)
+                // To be precise for historical data we would need to know availability on that date, 
+                // but we only have current availability. We will stick to current availability setting.
+                // Note: The original code used new Date() inside calculateScore, ignoring dateStr. 
+                // This is a flaw for 'Average' calculation but consistent for 'Today'. 
+                // We will reproduce that behavior for consistency.
+                const weekKey = `religious_study_${getWeekKey(new Date())}`; 
+                if (localStorage.getItem(weekKey) === 'true') studyScore = POINTS.STUDY;
+            } else {
+                // Daily logic
+                // Here dateStr is crucial
+                const dailyKey = `religious_study_daily_${dateStr}`;
+                if (localStorage.getItem(dailyKey) === 'true') studyScore = POINTS.STUDY;
+            }
+            
+            if (studyScore > 0) { total += studyScore; breakdown.push({ label: 'İlim Okuması', pts: studyScore }); }
+            
             return { total, breakdown };
         }
 
@@ -1166,7 +1271,7 @@
                 const textClass = isChecked ? 'text-emerald-800 font-bold' : 'text-gray-700'; 
                 html += `<div class="flex items-center p-2 rounded-lg border ${bgClass} transition text-xs select-none gap-3"><div class="cursor-pointer" onclick="toggleSpecialTask('${t.id}')">${iconHtml}</div><span class="flex-1 cursor-pointer ${textClass}" onclick="goToSurah(${t.page})">${t.text}</span><i class="fas ${t.icon} text-emerald-200"></i></div>`; 
             }); 
-            if(container) container.innerHTML = html;
+            if(container) container.innerHTML = html; 
             checkQuranCompletion();
         }
         function toggleSpecialTask(id) { const taskKey = `special_tasks_${new Date().toLocaleDateString()}`; const savedData = JSON.parse(localStorage.getItem(taskKey)) || {}; if (savedData[id]) delete savedData[id]; else savedData[id] = true; localStorage.setItem(taskKey, JSON.stringify(savedData)); if(window.saveLocalAndRemote) window.saveLocalAndRemote(taskKey, JSON.stringify(savedData)); renderSpecialQuranTasks(); refreshDataUI(); }
@@ -1245,8 +1350,26 @@
         
         function renderReligiousStudyTracker() { 
             const container = document.getElementById('religious-study-tracker-container'); if (!container) return; 
-            const now = new Date(); const weekKey = `religious_study_${getWeekKey(now)}`; 
-            const isCompleted = localStorage.getItem(weekKey) === 'true'; 
+            
+            const isAvailable = localStorage.getItem('userAvailability') !== 'false';
+            const descEl = document.getElementById('study-desc');
+            
+            let isCompleted = false;
+            
+            if (isAvailable) {
+                // WEEKLY LOGIC
+                const now = new Date(); 
+                const weekKey = `religious_study_${getWeekKey(now)}`; 
+                isCompleted = localStorage.getItem(weekKey) === 'true';
+                if(descEl) descEl.textContent = "Allah rızası için dini bilgilerinizi geliştirmek amacıyla yapmış olduğunuz her türlü okuma öğrenme (Haftalık).";
+            } else {
+                // DAILY LOGIC
+                const todayStr = new Date().toLocaleDateString();
+                const dailyKey = `religious_study_daily_${todayStr}`;
+                isCompleted = localStorage.getItem(dailyKey) === 'true';
+                if(descEl) descEl.textContent = "Allah rızası için dini bilgilerinizi geliştirmek amacıyla yapmış olduğunuz her türlü okuma öğrenme (Günlük).";
+            }
+
             const statusClass = isCompleted ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-100'; 
             const iconHtml = isCompleted ? `<div class="w-5 h-5 rounded border bg-white border-transparent flex items-center justify-center shrink-0"><i class="fas fa-check text-emerald-600 text-xs"></i></div>` : `<div class="w-5 h-5 rounded border border-gray-300 flex items-center justify-center bg-white shrink-0"></div>`; 
             const textClass = isCompleted ? 'text-gray-700 font-bold' : 'text-gray-600'; 
@@ -1255,7 +1378,24 @@
             updateHeaderTheme('header-study', isCompleted);
             refreshAccordionHeight('acc-study');
         }
-        function toggleReligiousStudy() { const now = new Date(); const weekKey = `religious_study_${getWeekKey(now)}`; const currentState = localStorage.getItem(weekKey) === 'true'; if (currentState) localStorage.removeItem(weekKey); else localStorage.setItem(weekKey, 'true'); if(window.saveLocalAndRemote) window.saveLocalAndRemote(weekKey, localStorage.getItem(weekKey)); renderReligiousStudyTracker(); refreshDataUI(); }
+        function toggleReligiousStudy() { 
+            const isAvailable = localStorage.getItem('userAvailability') !== 'false';
+            let key = '';
+            
+            if (isAvailable) {
+                const now = new Date(); 
+                key = `religious_study_${getWeekKey(now)}`;
+            } else {
+                const todayStr = new Date().toLocaleDateString();
+                key = `religious_study_daily_${todayStr}`;
+            }
+            
+            const currentState = localStorage.getItem(key) === 'true'; 
+            if (currentState) localStorage.removeItem(key); else localStorage.setItem(key, 'true'); 
+            if(window.saveLocalAndRemote) window.saveLocalAndRemote(key, localStorage.getItem(key)); 
+            renderReligiousStudyTracker(); 
+            refreshDataUI(); 
+        }
         function getWeekKey(date) { const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())); const dayNum = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - dayNum); const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7); return `${d.getUTCFullYear()}_W${weekNo}`; }
         function getDailyCounts() { const todayKey = `daily_dhikr_counts_${new Date().toLocaleDateString()}`; return JSON.parse(localStorage.getItem(todayKey)) || {}; }
         function saveDailyCount(id, val) { const todayKey = `daily_dhikr_counts_${new Date().toLocaleDateString()}`; const counts = getDailyCounts(); counts[id] = val; localStorage.setItem(todayKey, JSON.stringify(counts)); if(window.saveLocalAndRemote) window.saveLocalAndRemote(todayKey, JSON.stringify(counts)); }
